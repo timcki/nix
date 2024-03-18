@@ -64,11 +64,6 @@ let dark_theme = {
 }
 
 
-$env.PROMPT_INDICATOR = ""
-$env.PROMPT_INDICATOR_VI_INSERT = "➜ "
-$env.PROMPT_INDICATOR_VI_NORMAL = "← "
-$env.PROMPT_MULTILINE_INDICATOR = "::: "
-
 let carapace_completer = { |spans| carapace $spans.0 nushell $spans | from json }
 
 # The default config record. This is where much of your global configuration is setup.
