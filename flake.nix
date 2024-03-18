@@ -98,22 +98,17 @@
         programs = {
             nushell = {
                 enable = true;
+
                 configFile.source = ./config.nu;
-                extraConfig = ''
-                    $env.PATH = (
-                        $env.PATH |
-                        split row (char esep) |
-                        prepend /usr/local/bin |
-                        append /usr/bin/env
-                    )
-                '';
-                envFile.text = nixpkgs.lib.optionalString (osConfig ? environment) ''
+
+                envFile.source = ./env.nu;
+                extraEnv = nixpkgs.lib.optionalString (osConfig ? environment) ''
                     $env.PATH = ${builtins.replaceStrings
                     [ "$USER" "$HOME" ]
                     [ config.home.username config.home.homeDirectory ]
                     osConfig.environment.systemPath}
                 '';
-                
+
                 shellAliases = {
                     vi = "hx";
                     vim = "hx";
@@ -123,7 +118,13 @@
 
                     cat = "bat";
 
+                    # git
                     gs = "git status";
+
+                    # jujutsu
+                    jd = "jj desc";
+                    jn = "jj next";
+                    jp = "jj prev";
                 };
 
             };
@@ -144,7 +145,7 @@
                 };
             };
 
-            
+
             git = {
                 enable = true;
 

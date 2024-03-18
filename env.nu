@@ -2,6 +2,7 @@
 #
 # version = "0.90.1"
 
+
 def create_left_prompt [] {
     let home =  $nu.home-path
 
@@ -47,16 +48,18 @@ def create_right_prompt [] {
 }
 
 # Use nushell functions to define your right and left prompt
-$env.PROMPT_COMMAND = {|| create_left_prompt }
+#$env.PROMPT_COMMAND = {|| create_left_prompt }
 # FIXME: This default is not implemented in rust code as of 2023-09-08.
-$env.PROMPT_COMMAND_RIGHT = {|| create_right_prompt }
+#$env.PROMPT_COMMAND_RIGHT = {|| create_right_prompt }
+$env.USERNAME = "tim"
+$env.BAT_PAGER = "less -RFX"
+$env.BAT_THEME = "base16-256"
 
-# The prompt indicators are environmental variables that represent
-# the state of the prompt
-$env.PROMPT_INDICATOR = {|| "> " }
-$env.PROMPT_INDICATOR_VI_INSERT = {|| ": " }
-$env.PROMPT_INDICATOR_VI_NORMAL = {|| "> " }
-$env.PROMPT_MULTILINE_INDICATOR = {|| "| " }
+$env.PROMPT_INDICATOR = ""
+$env.PROMPT_INDICATOR_VI_INSERT = "➜ "
+$env.PROMPT_INDICATOR_VI_NORMAL = "← "
+$env.PROMPT_MULTILINE_INDICATOR = "::: "
+
 
 $env.CARGO_HOME = ($nu.home-path | path join ".cargo")
 
@@ -67,18 +70,6 @@ $env.PATH = ($env.PATH |
     append ($env.HOME | path join ".local" "bin")
 )
 $env.PATH = ($env.PATH | uniq)
-
-# If you want previously entered commands to have a different prompt from the usual one,
-# you can uncomment one or more of the following lines.
-# This can be useful if you have a 2-line prompt and it's taking up a lot of space
-# because every command entered takes up 2 lines instead of 1. You can then uncomment
-# the line below so that previously entered commands show with a single `🚀`.
-# $env.TRANSIENT_PROMPT_COMMAND = {|| "🚀 " }
-# $env.TRANSIENT_PROMPT_INDICATOR = {|| "" }
-# $env.TRANSIENT_PROMPT_INDICATOR_VI_INSERT = {|| "" }
-# $env.TRANSIENT_PROMPT_INDICATOR_VI_NORMAL = {|| "" }
-# $env.TRANSIENT_PROMPT_MULTILINE_INDICATOR = {|| "" }
-# $env.TRANSIENT_PROMPT_COMMAND_RIGHT = {|| "" }
 
 # Specifies how environment variables are:
 # - converted from a string to a value on Nushell startup (from_string)
@@ -112,3 +103,28 @@ $env.NU_PLUGIN_DIRS = [
 #
 #
 zoxide init nushell | save -f ~/.zoxide.nu
+
+do --env {
+    let ssh_agent_file = (
+        $nu.temp-path | path join $"ssh-agent-($env.USER? | default $env.USERNAME).nuon"
+    )
+
+    if ($ssh_agent_file | path exists) {
+        let ssh_agent_env = open ($ssh_agent_file)
+        if ($"/proc/($ssh_agent_env.SSH_AGENT_PID)" | path exists) {
+            load-env $ssh_agent_env
+            return
+        } else {
+            rm $ssh_agent_file
+        }
+    }
+
+    let ssh_agent_env = ^ssh-agent -c
+        | lines
+        | first 2
+        | parse "setenv {name} {value};"
+        | transpose --header-row
+        | into record
+    load-env $ssh_agent_env
+    $ssh_agent_env | save --force $ssh_agent_file
+}

@@ -170,4 +170,4 @@ $env.config = {
     plugins: {} # Per-plugin configuration. See https://www.nushell.sh/contributor-book/plugins.html#configuration.
 }
 
-# source ~/.zoxide.nu
+source ~/.zoxide.nu
