@@ -1,0 +1,17 @@
+{
+  "theme": "Base16 Tomorrow Night",
+  //"base_keymap": "SublimeText",
+  "vim_mode": true,
+  "ui_font_family": "SF Pro",
+  "ui_font_size": 14,
+  "buffer_font_family": "Berkeley Mono Variable",
+  "buffer_line_height": "standard",
+  "relative_line_numbers": true,
+  "auto_update": true,
+  "chat_panel": { "button": false },
+  "collaboration_panel": { "button": false },
+  "buffer_font_size": 12,
+  "autosave": "on_focus_change",
+  "confirm_quit": true,
+  "terminal": { "line_height": "standard" }
+}

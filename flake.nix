@@ -44,7 +44,7 @@
           alacritty
           nushell
 
-          # jankyborders
+          jankyborders
 
           yabai
           skhd
@@ -99,7 +99,7 @@
                 yabai -m rule --add label="About This Mac" app="System Information" title="About This Mac" manage=off
 
                 # Any other arbitrary config here
-                # borders active_color=0xe0808080 inactive_color=0x00010101 width=4.0 &
+                borders active_color=0xe0808080 inactive_color=0x00010101 width=4.0 &
               '';
           };
 
@@ -114,21 +114,21 @@
             enable = true;
             onActivation.cleanup = "uninstall";
 
-            casks = [ "rectangle" "zed" "discord" "bruno" "vscodium" "neovide" "vimr" ];
+            casks = [ "rectangle" "zed@preview" "discord" "bruno" "vscodium" "neovide" "vimr" ];
         };
     };
 
     bigboi-configuration = { pkgs, ... }: {
         homebrew = {
-            taps = [ "FelixKratz/formulae" ];
-            brews = [ "hyper-focus" "pam-reattach" "borders" ];
+            taps = [ ];
+            brews = [ "hyper-focus" "pam-reattach" ];
         };
     };
 
     small-configuration = { pkgs, ... }: {
         homebrew = {
-            taps = [ "FelixKratz/formulae" ];
-            brews = [ "pam-reattach" "borders" ];
+            taps = [ ];
+            brews = [ "pam-reattach" ];
         };
     };
 
@@ -178,7 +178,14 @@
             BAT_THEME = "base16-256";
         };
 
+        home.file = {
+            ".config/zed/settings.json".source = ./zed/settings.json;
+            ".config/zed/keymap.json".source = ./zed/keymap.json;
+        };
+
         programs = {
+            fish.enable = true;
+            zoxide.enable = true;
             nushell = {
                 enable = true;
 
@@ -241,12 +248,12 @@
                 enable = true;
                 settings = {
                     add_newline = false;
-                    format = "$directory$sudo$jj_status$character";
+                    format = "$sudo$directory$jj_status$character";
 
                     character.success_symbol = "[➜](bold green)";
                     character.error_symbol = "[➜](bold red)";
                     character.vimcmd_symbol = "[←](bold green)";
-                    character.vimcmd_visual_symbol = "[←](bold green)";
+                    character.vimcmd_visual_symbol = "[←](bold purple)";
 
                     line_break.disabled = true;
                     jj_status.symbol = "";
