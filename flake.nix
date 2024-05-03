@@ -15,7 +15,7 @@
 
     outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager }:
     let
-    shared-configuration = { pkgs, ... }: {
+    shared-configuration = { pkgs, nix-darwin, home-manager, ... }: {
        services.nix-daemon.enable = true;
         # enable sudo with touchid
         security.pam.enableSudoTouchIdAuth = true;
@@ -40,95 +40,37 @@
             shell = pkgs.fish;
         };
 
-        environment.systemPackages = with pkgs; [
-          alacritty
-          nushell
-
-          # jankyborders
-
-          yabai
-          skhd
-
-        ];
+        environment.systemPackages = with pkgs; [ pam-reattach ];
+        # Hack to make pam-reattach work
+        environment.etc."pam.d/sudo_local".text = ''
+          # Written by nix-darwin
+          auth       optional       ${pkgs.pam-reattach}/lib/pam/pam_reattach.so
+          auth       sufficient     pam_tid.so
+        '';
 
         programs = {
             fish.enable = true;
             zsh.enable = true;
         };
 
-        services = {
-          yabai = {
-            enable = true;
-            package = pkgs.yabai;
-            enableScriptingAddition = true;
-            config = {
-              focus_follows_mouse          = "autoraise";
-              mouse_follows_focus          = "off";
-              window_placement             = "second_child";
-              window_opacity               = "off";
-              window_opacity_duration      = "0.0";
-              window_topmost               = "on";
-              window_shadow                = "float";
-              active_window_opacity        = "1.0";
-              normal_window_opacity        = "0.99";
-              split_ratio                  = "0.61805";
-              auto_balance                 = "on";
-              mouse_modifier               = "fn";
-              mouse_action1                = "move";
-              mouse_action2                = "resize";
-              layout                       = "bsp";
-              top_padding                  = 8;
-              bottom_padding               = 8;
-              left_padding                 = 8;
-              right_padding                = 8;
-              window_gap                   = 8;
-            };
-
-            extraConfig = ''
-                # rules
-                yabai -m rule --add label="Finder" app="^Finder$" title="(Co(py|nnect)|Move|Info|Pref)" manage=off
-                yabai -m rule --add label="Safari" app="^Safari$" title="^(General|(Tab|Password|Website|Extension)s|AutoFill|Se(arch|curity)|Privacy|Advance)$" manage=off
-                yabai -m rule --add label="macfeh" app="^macfeh$" manage=off
-                yabai -m rule --add label="System Preferences" app="^System Preferences$" title=".*" manage=off
-                yabai -m rule --add label="App Store" app="^App Store$" manage=off
-                yabai -m rule --add label="Activity Monitor" app="^Activity Monitor$" manage=off
-                yabai -m rule --add label="Strongbox Pro" app="^Strongbox Pro$" manage=off
-                yabai -m rule --add label="Calculator" app="^Calculator$" manage=off
-                yabai -m rule --add label="Dictionary" app="^Dictionary$" manage=off
-                yabai -m rule --add label="Software Update" title="Software Update" manage=off
-                yabai -m rule --add label="About This Mac" app="System Information" title="About This Mac" manage=off
-
-                # Any other arbitrary config here
-                # borders active_color=0xe0808080 inactive_color=0x00010101 width=4.0 &
-              '';
-          };
-
-          skhd = {
-            enable = true;
-            package = pkgs.skhd;
-          };
-        };
-
-
         homebrew = {
             enable = true;
             onActivation.cleanup = "uninstall";
 
-            casks = [ "rectangle" "zed" "discord" "bruno" "vscodium" "neovide" "vimr" ];
+            taps = [ "FelixKratz/formulae" "nikitabobko/tap" "dotenvx/brew"];
+            casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle"];
         };
     };
 
-    bigboi-configuration = { pkgs, ... }: {
+    bigboi-configuration = { pkgs, nix-darwin, home-manager, ... }: {
         homebrew = {
-            taps = [ "FelixKratz/formulae" ];
-            brews = [ "hyper-focus" "pam-reattach" "borders" ];
+            brews = [ "hyper-focus" "k9s" "yarn" "dotenvx/brew/dotenvx" "cargo-binstall"];
         };
     };
 
-    small-configuration = { pkgs, ... }: {
+    small-configuration = { pkgs, nix-darwin, home-manager, ... }: {
         homebrew = {
-            taps = [ "FelixKratz/formulae" ];
-            brews = [ "pam-reattach" "borders" ];
+            brews = [ "k9s" "yarn" "cargo-binstall"];
         };
     };
 
@@ -141,14 +83,10 @@
 
         home.packages = with pkgs; [
             fish
-            nushell
             starship
 
             helix
             neovim
-
-            yabai
-            skhd
 
             bat
             eza
@@ -162,6 +100,7 @@
 
             nodejs-slim
 
+            restish
             jq
             ripgrep
             tmux
@@ -178,59 +117,63 @@
             BAT_THEME = "base16-256";
         };
 
+        home.file = {
+            ".config/ghostty/config".source = ./ghostty.config;
+        };
+
         programs = {
-            nushell = {
-                enable = true;
+            # nushell = {
+            #     enable = true;
 
-                configFile.source = ./config.nu;
+            #     configFile.source = ./config.nu;
 
-                envFile.source = ./env.nu;
-                extraEnv = nixpkgs.lib.optionalString (osConfig ? environment) ''
-                    $env.PATH = ${
-                      builtins.replaceStrings
-                      [ "$USER" "$HOME" ]
-                      [ config.home.username config.home.homeDirectory ]
-                      osConfig.environment.systemPath
-                    }
+            #     envFile.source = ./env.nu;
+            #     extraEnv = nixpkgs.lib.optionalString (osConfig ? environment) ''
+            #         $env.PATH = ${
+            #           builtins.replaceStrings
+            #           [ "$USER" "$HOME" ]
+            #           [ config.home.username config.home.homeDirectory ]
+            #           osConfig.environment.systemPath
+            #         }
 
-                    $env.PATH = ($env.PATH |
-                        split row (char esep) |
-                        prepend "/usr/local/bin" |
-                        prepend "/opt/homebrew/bin" |
-                        append ($env.CARGO_HOME | path join "bin") |
-                        append ($env.HOME | path join ".local" "bin") |
-                        append ($env.HOME | path join "go" "bin")
-                    )
-                    $env.PATH = ($env.PATH | uniq)
+            #         $env.PATH = ($env.PATH |
+            #             split row (char esep) |
+            #             prepend "/usr/local/bin" |
+            #             prepend "/opt/homebrew/bin" |
+            #             append ($env.CARGO_HOME | path join "bin") |
+            #             append ($env.HOME | path join ".local" "bin") |
+            #             append ($env.HOME | path join "go" "bin")
+            #         )
+            #         $env.PATH = ($env.PATH | uniq)
 
-                    zoxide init nushell | save -f ~/.zoxide.nu
-                '';
+            #         zoxide init nushell | save -f ~/.zoxide.nu
+            #     '';
 
-                shellAliases = {
-                    switch = "darwin-rebuild switch --flake ~/.config/nix";
+            #     shellAliases = {
+            #         switch = "darwin-rebuild switch --flake ~/.config/nix";
 
-                    vi = "hx";
-                    vim = "hx";
-                    nano = "hx";
+            #         vi = "hx";
+            #         vim = "hx";
+            #         nano = "hx";
 
-                    vm = "vimr --cur-env";
+            #         vm = "vimr --cur-env";
 
-                    cat = "bat";
+            #         cat = "bat";
 
-                    # git
-                    gs = "git status";
+            #         # git
+            #         gs = "git status";
 
-                    # jujutsu
-                    je = "jj edit";
-                    jd = "jj desc";
-                    jn = "jj next";
-                    jp = "jj prev";
+            #         # jujutsu
+            #         je = "jj edit";
+            #         jd = "jj desc";
+            #         jn = "jj next";
+            #         jp = "jj prev";
 
-                    # misc
-                    dc = "docker compose";
-                };
+            #         # misc
+            #         dc = "docker compose";
+            #     };
 
-            };
+            # };
 
             carapace = {
                 enable = true;
@@ -250,6 +193,7 @@
 
                     line_break.disabled = true;
                     jj_status.symbol = "";
+                    jj_status.no_description_symbol = " ✎";
                 };
             };
 
