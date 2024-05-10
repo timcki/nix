@@ -114,7 +114,7 @@
             enable = true;
             onActivation.cleanup = "uninstall";
 
-            casks = [ "rectangle" "zed@preview" "discord" "bruno" "vscodium" "neovide" "vimr" ];
+            casks = [ "rectangle" "zed@preview" "1password@nightly" "1password-cli@beta" "discord" "bruno" "vscodium" "neovide" "vimr" ];
         };
     };
 
