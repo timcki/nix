@@ -57,7 +57,7 @@
             enable = true;
             onActivation.cleanup = "uninstall";
 
-            taps = [ "FelixKratz/formulae" "nikitabobko/tap" "dotenvx/brew"];
+            taps = [ "nikitabobko/tap" "dotenvx/brew"];
             casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle"];
         };
     };
@@ -70,7 +70,7 @@
 
     small-configuration = { pkgs, nix-darwin, home-manager, ... }: {
         homebrew = {
-            brews = [ "k9s" "yarn" "cargo-binstall"];
+            brews = [ "cargo-binstall"];
         };
     };
 
@@ -118,62 +118,14 @@
         };
 
         home.file = {
-            ".config/ghostty/config".source = ./ghostty.config;
+            ".config/ghostty/config".source = ./ghostty/config;
+            ".config/zed/settings.json".source = ./zed/settings.json;
+            ".config/zed/keymap.json".source = ./zed/keymap.json;
         };
 
         programs = {
-            # nushell = {
-            #     enable = true;
-
-            #     configFile.source = ./config.nu;
-
-            #     envFile.source = ./env.nu;
-            #     extraEnv = nixpkgs.lib.optionalString (osConfig ? environment) ''
-            #         $env.PATH = ${
-            #           builtins.replaceStrings
-            #           [ "$USER" "$HOME" ]
-            #           [ config.home.username config.home.homeDirectory ]
-            #           osConfig.environment.systemPath
-            #         }
-
-            #         $env.PATH = ($env.PATH |
-            #             split row (char esep) |
-            #             prepend "/usr/local/bin" |
-            #             prepend "/opt/homebrew/bin" |
-            #             append ($env.CARGO_HOME | path join "bin") |
-            #             append ($env.HOME | path join ".local" "bin") |
-            #             append ($env.HOME | path join "go" "bin")
-            #         )
-            #         $env.PATH = ($env.PATH | uniq)
-
-            #         zoxide init nushell | save -f ~/.zoxide.nu
-            #     '';
-
-            #     shellAliases = {
-            #         switch = "darwin-rebuild switch --flake ~/.config/nix";
-
-            #         vi = "hx";
-            #         vim = "hx";
-            #         nano = "hx";
-
-            #         vm = "vimr --cur-env";
-
-            #         cat = "bat";
-
-            #         # git
-            #         gs = "git status";
-
-            #         # jujutsu
-            #         je = "jj edit";
-            #         jd = "jj desc";
-            #         jn = "jj next";
-            #         jp = "jj prev";
-
-            #         # misc
-            #         dc = "docker compose";
-            #     };
-
-            # };
+            fish.enable = true;
+            zoxide.enable = true;
 
             carapace = {
                 enable = true;
@@ -184,12 +136,12 @@
                 enable = true;
                 settings = {
                     add_newline = false;
-                    format = "$directory$sudo$jj_status$character";
+                    format = "$sudo$directory$jj_status$character";
 
                     character.success_symbol = "[➜](bold green)";
                     character.error_symbol = "[➜](bold red)";
                     character.vimcmd_symbol = "[←](bold green)";
-                    character.vimcmd_visual_symbol = "[←](bold green)";
+                    character.vimcmd_visual_symbol = "[←](bold purple)";
 
                     line_break.disabled = true;
                     jj_status.symbol = "";

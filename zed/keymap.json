@@ -1,0 +1,15 @@
+[
+  {
+    "context": "Editor && mode == full",
+    "bindings": {
+      "cmd-l": "assistant::QuoteSelection"
+    }
+  },
+
+  {
+    "context": "ConversationEditor > Editor",
+    "bindings": {
+      "cmd-l": "assistant::QuoteSelection"
+    }
+  }
+]

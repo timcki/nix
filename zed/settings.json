@@ -1,0 +1,48 @@
+{
+  // Editor behavior
+  "language_models": {
+    "anthropic": {
+      "version": "1"
+    }
+  },
+  "vim_mode": true,
+  "vim": {
+    "use_multiline_find": true
+  },
+  "relative_line_numbers": true,
+  "vertical_scroll_margin": 0,
+  "format_on_save": "on",
+  "confirm_quit": true,
+
+  // Visual appearance
+  "theme": "Base16 Tomorrow Night",
+  "ui_font_family": "SF Pro",
+  "ui_font_size": 14,
+  "buffer_font_family": "Berkeley Mono",
+  "buffer_font_size": 12,
+  "buffer_line_height": "standard",
+
+  // File management
+  "tabs": { "file_icons": true },
+  "projects_online_by_default": false,
+
+  // Terminal settings
+  "terminal": { "line_height": "standard" },
+
+  // AI assistance
+  "assistant": {
+    "default_model": {
+      "provider": "anthropic",
+      "model": "claude-3-5-sonnet-latest"
+    },
+    "version": "2",
+    "provider": null
+  },
+
+  // Features and experiments
+  "features": { "inline_completion_provider": "supermaven" },
+  "experiments": { "experimental_themes": true },
+
+  // System behavior
+  "auto_update": true
+}
