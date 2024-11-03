@@ -81,12 +81,15 @@
         # let home-manager install and manage itself.
         programs.home-manager.enable = true;
 
+
         home.packages = with pkgs; [
             fish
             starship
 
             helix
             neovim
+
+            nixd
 
             bat
             eza
@@ -112,9 +115,14 @@
         ];
 
         home.sessionVariables = {
-            EDITOR = "nvim";
+            EDITOR = "zed --wait";
             BAT_PAGER = "less -XRF";
             BAT_THEME = "base16-256";
+            FZF_DEFAULT_OPTS = "--height 40% --layout=reverse";
+            TERM = "xterm-256color";
+            USERNAME = "tim";
+            PAGER = "less -RFX";
+            ANTHROPIC_API_KEY = "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";
         };
 
         home.file = {
@@ -124,7 +132,52 @@
         };
 
         programs = {
-            fish.enable = true;
+            fish = {
+                enable = true;
+                interactiveShellInit = ''
+                      set fish_greeting ""
+                      fish_vi_key_bindings
+
+                      if test -n "$ZED_TERM"
+                          if test "$ZED_TERM" != "true"
+                              if not set -q TMUX
+                                  tmux attach -t default; or tmux new -s default
+                              end
+                          end
+                      else
+                          if not set -q TMUX
+                              tmux attach -t default; or tmux new -s default
+                          end
+                      end
+
+                      fish_ssh_agent
+
+                      # Google Cloud SDK
+                      if test -f '/Users/tim/Downloads/google-cloud-sdk/path.fish.inc'
+                          source '/Users/tim/Downloads/google-cloud-sdk/path.fish.inc'
+                      end
+                    '';
+                shellAliases = {
+                    switchd = "darwin-rebuild switch --flake ~/.config/nix";
+                    vi = "hx";
+                    vim = "hx";
+                    nano = "hx";
+                    cat = "bat";
+
+                    # git
+                    gs = "git status";
+
+                    # jujutsu
+                    je = "jj edit";
+                    jd = "jj desc";
+                    jn = "jj next";
+                    jp = "jj prev";
+                    jb = "jj bookmark";
+
+                    # misc
+                    dc = "docker compose";
+                };
+            };
             zoxide.enable = true;
 
             carapace = {
@@ -180,6 +233,7 @@
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
                         home-manager.verbose = true;
+                        home-manager.backupFileExtension = "bak";
                         home-manager.users.tim = homeconfig;
                     }
                 ];
@@ -193,6 +247,7 @@
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
                         home-manager.verbose = true;
+                        home-manager.backupFileExtension = "bak";
                         home-manager.users.tim = homeconfig;
                     }
                 ];
