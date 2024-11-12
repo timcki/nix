@@ -27,7 +27,18 @@
   "projects_online_by_default": false,
 
   // Terminal settings
-  "terminal": { "line_height": "standard" },
+  "terminal": { 
+    "line_height": "standard",
+    "env": {
+      "EDITOR": "zed --wait"
+    }
+  },
+
+  // File syntax highlighting
+  "file_types": {
+    "Dockerfile": ["Dockerfile", "Dockerfile.*"],
+    "JSON": ["json", "jsonc", "*.code-snippets"],
+  },
 
   // AI assistance
   "assistant": {

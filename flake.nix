@@ -64,7 +64,7 @@
 
     bigboi-configuration = { pkgs, nix-darwin, home-manager, ... }: {
         homebrew = {
-            brews = [ "hyper-focus" "k9s" "yarn" "dotenvx/brew/dotenvx" "cargo-binstall"];
+            brews = [ "hyper-focus" "k9s" "yarn" "dotenvx/brew/dotenvx" "cargo-binstall" "graphviz" ];
         };
     };
 
@@ -85,6 +85,7 @@
         home.packages = with pkgs; [
             fish
             starship
+            atuin
 
             helix
             neovim
@@ -115,14 +116,15 @@
         ];
 
         home.sessionVariables = {
-            EDITOR = "zed --wait";
+            EDITOR = "nvim";
             BAT_PAGER = "less -XRF";
             BAT_THEME = "base16-256";
             FZF_DEFAULT_OPTS = "--height 40% --layout=reverse";
             TERM = "xterm-256color";
             USERNAME = "tim";
             PAGER = "less -RFX";
-            ANTHROPIC_API_KEY = "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";
+            # ANTHROPIC_API_KEY = "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";
+            ANTHROPIC_API_KEY = "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";
         };
 
         home.file = {
@@ -179,6 +181,10 @@
                 };
             };
             zoxide.enable = true;
+            atuin = {
+                enable = true;
+                enableFishIntegration = true;
+            };
 
             carapace = {
                 enable = true;
