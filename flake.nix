@@ -61,9 +61,9 @@
 
     bigboi-configuration = { pkgs, nix-darwin, home-manager, ... }: {
         homebrew = {
-            taps = [ "nikitabobko/tap" "dotenvx/brew"];
-            casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle" "google-cloud-sdk" "dotenvx" ];
-            brews = [ "hyper-focus" "k9s" "yarn" "cargo-binstall" "graphviz" "circleci" ];
+            taps = [ "nikitabobko/tap" ];
+            casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle" "google-cloud-sdk" ];
+            brews = [ "hyper-focus" "k9s" "yarn" "cargo-binstall" "graphviz" "circleci" "dotenvx/brew/dotenvx" ];
         };
     };
 
@@ -123,8 +123,6 @@
             TERM = "xterm-256color";
             USERNAME = "tim";
             PAGER = "less -RFX";
-            ANTHROPIC_API_KEY = "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";
-            CLAUDE_API_KEY = "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";
             CLAUDE_MODEL = "claude-3-5-haiku-20241022";
         };
 
@@ -155,10 +153,14 @@
 
                       fish_ssh_agent
 
-                      # Google Cloud SDK
-                      if test -f '/Users/tim/Downloads/google-cloud-sdk/path.fish.inc'
-                          source '/Users/tim/Downloads/google-cloud-sdk/path.fish.inc'
+                      if test -z "$ANTHROPIC_API_KEY"
+                          set -gx ANTHROPIC_API_KEY (op item get anthropic.key --fields label=credential)
                       end
+                      if test -z "$CLAUDE_API_KEY"
+                          set -gx CLAUDE_API_KEY (op item get anthropic.key --fields label=credential)
+                      end
+
+
                     '';
                 shellAliases = {
                     switchd = "darwin-rebuild switch --flake ~/.config/nix";
