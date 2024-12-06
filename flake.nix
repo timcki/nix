@@ -56,20 +56,20 @@
         homebrew = {
             enable = true;
             onActivation.cleanup = "uninstall";
-
-            taps = [ "nikitabobko/tap" "dotenvx/brew"];
-            casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle"];
         };
     };
 
     bigboi-configuration = { pkgs, nix-darwin, home-manager, ... }: {
         homebrew = {
-            brews = [ "hyper-focus" "k9s" "yarn" "dotenvx/brew/dotenvx" "cargo-binstall" "graphviz" ];
+            taps = [ "nikitabobko/tap" "dotenvx/brew"];
+            casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle" "google-cloud-sdk" "dotenvx" ];
+            brews = [ "hyper-focus" "k9s" "yarn" "cargo-binstall" "graphviz" "circleci" ];
         };
     };
 
     small-configuration = { pkgs, nix-darwin, home-manager, ... }: {
         homebrew = {
+            casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle" ];
             brews = [ "cargo-binstall"];
         };
     };
@@ -123,8 +123,9 @@
             TERM = "xterm-256color";
             USERNAME = "tim";
             PAGER = "less -RFX";
-            # ANTHROPIC_API_KEY = "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";
             ANTHROPIC_API_KEY = "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";
+            CLAUDE_API_KEY = "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";
+            CLAUDE_MODEL = "claude-3-5-haiku-20241022";
         };
 
         home.file = {

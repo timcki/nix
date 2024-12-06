@@ -47,7 +47,8 @@
       "model": "claude-3-5-sonnet-latest"
     },
     "version": "2",
-    "provider": null
+    "provider": null,
+    "show_hints": false,
   },
 
   // Features and experiments
