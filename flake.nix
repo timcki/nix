@@ -86,11 +86,13 @@
             fish
             starship
             atuin
+            mods
 
             helix
             neovim
 
             nixd
+            nil
 
             bat
             eza
@@ -101,6 +103,7 @@
             gopls
             python3
             rustup
+            dbmate
 
             nodejs-slim
 
