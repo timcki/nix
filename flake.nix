@@ -62,14 +62,14 @@
     bigboi-configuration = { pkgs, nix-darwin, home-manager, ... }: {
         homebrew = {
             taps = [ "nikitabobko/tap" ];
-            casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle" "google-cloud-sdk" ];
+            casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle" "google-cloud-sdk" "ghostty" ];
             brews = [ "hyper-focus" "k9s" "yarn" "cargo-binstall" "graphviz" "circleci" "dotenvx/brew/dotenvx" ];
         };
     };
 
     small-configuration = { pkgs, nix-darwin, home-manager, ... }: {
         homebrew = {
-            casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle" ];
+            casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle" "ghostty" ];
             brews = [ "cargo-binstall"];
         };
     };
@@ -83,9 +83,10 @@
 
 
         home.packages = with pkgs; [
+            # ghostty
+
             fish
             starship
-            atuin
             mods
 
             helix
@@ -102,10 +103,11 @@
             go
             gopls
             python3
+            poetry
             rustup
             dbmate
 
-            nodejs-slim
+            nodejs
 
             restish
             jq
@@ -127,6 +129,7 @@
             USERNAME = "tim";
             PAGER = "less -RFX";
             CLAUDE_MODEL = "claude-3-5-haiku-20241022";
+            HOMEBREW_NO_AUTO_UPDATE = "";
         };
 
         home.file = {
@@ -142,6 +145,15 @@
                       set fish_greeting ""
                       fish_vi_key_bindings
 
+                      bind \cP _fish_ai_codify_or_explain
+                      bind -k nul _fish_ai_autocomplete_or_fix
+
+
+                      if test -z "$ANTHROPIC_API_KEY"
+                          set -gx ANTHROPIC_API_KEY (op item get anthropic.key --fields label=credential)
+                      end
+
+
                       if test -n "$ZED_TERM"
                           if test "$ZED_TERM" != "true"
                               if not set -q TMUX
@@ -155,14 +167,6 @@
                       end
 
                       fish_ssh_agent
-
-                      if test -z "$ANTHROPIC_API_KEY"
-                          set -gx ANTHROPIC_API_KEY (op item get anthropic.key --fields label=credential)
-                      end
-                      if test -z "$CLAUDE_API_KEY"
-                          set -gx CLAUDE_API_KEY (op item get anthropic.key --fields label=credential)
-                      end
-
 
                     '';
                 shellAliases = {
@@ -187,11 +191,6 @@
                 };
             };
             zoxide.enable = true;
-            atuin = {
-                enable = true;
-                enableFishIntegration = true;
-            };
-
             carapace = {
                 enable = true;
                 enableNushellIntegration = true;
@@ -203,10 +202,11 @@
                     add_newline = false;
                     format = "$sudo$directory$jj_status$character";
 
-                    character.success_symbol = "[➜](bold green)";
-                    character.error_symbol = "[➜](bold red)";
-                    character.vimcmd_symbol = "[←](bold green)";
+                    character.success_symbol = "[→](bold green)";
+                    character.error_symbol = "[→](bold red)";
+                    character.vimcmd_symbol = "[←](bold yellow)";
                     character.vimcmd_visual_symbol = "[←](bold purple)";
+
 
                     line_break.disabled = true;
                     jj_status.symbol = "";
@@ -244,7 +244,7 @@
                     home-manager.darwinModules.home-manager {
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
-                        home-manager.verbose = true;
+                        home-manager.verbose = false;
                         home-manager.backupFileExtension = "bak";
                         home-manager.users.tim = homeconfig;
                     }
@@ -258,7 +258,7 @@
                     home-manager.darwinModules.home-manager {
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
-                        home-manager.verbose = true;
+                        home-manager.verbose = false;
                         home-manager.backupFileExtension = "bak";
                         home-manager.users.tim = homeconfig;
                     }
