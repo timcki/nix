@@ -113,7 +113,7 @@
 
             go
             gopls
-            (python3.withPackages (ps: [ ps.pip ps.aider-install ]))
+            (python3.withPackages (ps: [ ps.pip ]))
             poetry
             rustup
             dbmate
