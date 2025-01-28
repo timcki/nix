@@ -23,6 +23,14 @@
         # necessary for using flakes on this system.
         nix.settings.experimental-features = "nix-command flakes";
 
+        nix.gc = {
+          automatic = true;
+          interval = {
+              Day = 3;
+          };
+          options = "--delete-older-than 3d";
+        };
+
         system.configurationRevision = self.rev or self.dirtyrev or null;
 
         # used for backwards compatibility. please read the changelog
@@ -55,7 +63,10 @@
 
         homebrew = {
             enable = true;
-            onActivation.cleanup = "uninstall";
+            onActivation = {
+                autoUpdate = true;
+                cleanup = "uninstall";
+            };
         };
     };
 
@@ -63,14 +74,14 @@
         homebrew = {
             taps = [ "nikitabobko/tap" ];
             casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle" "google-cloud-sdk" "ghostty" ];
-            brews = [ "hyper-focus" "k9s" "yarn" "cargo-binstall" "graphviz" "circleci" "dotenvx/brew/dotenvx" ];
+            brews = [ "hyper-focus" "k9s" "yarn" "cargo-binstall" "graphviz" "circleci" "dotenvx/brew/dotenvx" "llm" ];
         };
     };
 
     small-configuration = { pkgs, nix-darwin, home-manager, ... }: {
         homebrew = {
             casks = [ "zed@preview" "discord" "vimr" "1password@nightly" "1password-cli@beta" "jordanbaird-ice" "rectangle" "ghostty" ];
-            brews = [ "cargo-binstall"];
+            brews = [ "cargo-binstall" "llm" ];
         };
     };
 
@@ -102,7 +113,7 @@
 
             go
             gopls
-            python3
+            (python3.withPackages (ps: [ ps.pip ps.aider-install ]))
             poetry
             rustup
             dbmate
@@ -214,6 +225,10 @@
                 };
             };
 
+            # python3 = {
+            #     enable = true;
+            # };
+
             git = {
                 enable = true;
 
@@ -232,6 +247,7 @@
                     diff.colormoved = "default";
                 };
             };
+
         };
 
     };
