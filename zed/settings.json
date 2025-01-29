@@ -1,13 +1,12 @@
 {
-  // Editor behavior
-  "language_models": {
-    "anthropic": {
-      "version": "1"
-    }
-  },
   "vim_mode": true,
-  "vim": {
-    "use_multiline_find": true
+  "vim": { "use_multiline_find": true },
+  "scrollbar": { "show": "never" },
+
+  // Indentation, rainbow indentation
+  "indent_guides": {
+    "enabled": true,
+    "coloring": "indent_aware"
   },
   "relative_line_numbers": true,
   "vertical_scroll_margin": 0,
@@ -26,21 +25,37 @@
   "tabs": { "file_icons": true },
   "projects_online_by_default": false,
 
-  // Terminal settings
-  "terminal": { 
-    "line_height": "standard",
-    "env": {
-      "EDITOR": "zed --wait"
+  // Inlay hints preconfigured by Zed: Go, Rust, Typescript and Svelte
+  "inlay_hints": { "enabled": true },
+  "languages": {
+    // Refer https://zed.dev/docs/languages/javascript and https://zed.dev/docs/languages/typescript for more info
+    "TypeScript": {
+      // Refer https://github.com/jellydn/ts-inlay-hints for how to setup for Neovim and VSCode
+      "inlay_hints": {
+        "enabled": true,
+        "show_parameter_hints": false,
+        "show_other_hints": true,
+        "show_type_hints": true
+      }
     }
+  },
+
+  // Terminal settings
+  "terminal": {
+    "line_height": "standard",
+    "env": { "EDITOR": "zed --wait" }
   },
 
   // File syntax highlighting
   "file_types": {
     "Dockerfile": ["Dockerfile", "Dockerfile.*"],
-    "JSON": ["json", "jsonc", "*.code-snippets"],
+    "JSON": ["json", "jsonc", "*.code-snippets"]
   },
 
   // AI assistance
+  "language_models": {
+    "anthropic": { "version": "2" }
+  },
   "assistant": {
     "default_model": {
       "provider": "anthropic",
@@ -48,11 +63,38 @@
     },
     "version": "2",
     "provider": null,
-    "show_hints": false,
+    "show_hints": false
   },
+  "features": { "inline_completion_provider": "supermaven" },
+
+  "file_scan_exclusions": [
+    "**/.git",
+    "**/.svn",
+    "**/.hg",
+    "**/CVS",
+    "**/.DS_Store",
+    "**/Thumbs.db",
+    "**/.classpath",
+    "**/.settings",
+    // above is default from Zed
+    "**/out",
+    "**/dist",
+    "**/.husky",
+    "**/.turbo",
+    "**/.vscode-test",
+    "**/.vscode",
+    "**/.next",
+    "**/.storybook",
+    "**/.tap",
+    "**/.nyc_output",
+    "**/report",
+    "**/node_modules",
+    "**/.jj",
+    ".aider*",
+    "**/.aider*"
+  ],
 
   // Features and experiments
-  "features": { "inline_completion_provider": "supermaven" },
   "experiments": { "experimental_themes": true },
 
   // System behavior

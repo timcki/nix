@@ -27,7 +27,7 @@
       ", u w": "editor::ToggleSoftWrap",
 
       // NOTE: Toggle Zen mode, not fully working yet
-      //", c z": "work,::ToggleCenteredLayout",
+      //", c z": "workspace::ToggleCenteredLayout",
 
       // Open markdown preview
       ", m p": "markdown::OpenPreview",
@@ -50,10 +50,10 @@
       // put key-bindings here if you want them to work only in normal mode
       // Window movement bindings
       // Ctrl jklk to move between panes
-      "ctrl-h": ["work,::ActivatePaneInDirection", "Left"],
-      "ctrl-l": ["work,::ActivatePaneInDirection", "Right"],
-      "ctrl-k": ["work,::ActivatePaneInDirection", "Up"],
-      "ctrl-j": ["work,::ActivatePaneInDirection", "Down"],
+      "ctrl-h": ["workspace::ActivatePaneInDirection", "Left"],
+      "ctrl-l": ["workspace::ActivatePaneInDirection", "Right"],
+      "ctrl-k": ["workspace::ActivatePaneInDirection", "Up"],
+      "ctrl-j": ["workspace::ActivatePaneInDirection", "Down"],
 
       // +LSP
       ", c a": "editor::ToggleCodeActions",
@@ -124,13 +124,13 @@
     }
   },
   // Better escape
-  {
-    "context": "Editor && vim_mode == insert && !menu",
-    "bindings": {
-      "j j": "vim::NormalBefore", // remap jj in insert mode to escape
-      "j k": "vim::NormalBefore" // remap jk in insert mode to escape
-    }
-  },
+  // {
+  //   "context": "Editor && vim_mode == insert && !menu",
+  //   "bindings": {
+  //     "j j": "vim::NormalBefore", // remap jj in insert mode to escape
+  //     "j k": "vim::NormalBefore" // remap jk in insert mode to escape
+  //   }
+  // },
   // Rename
   {
     "context": "Editor && vim_operator == c",
@@ -149,7 +149,7 @@
   },
   // Toggle terminal
   {
-    "context": "Work,",
+    "context": "workspace",
     "bindings": {
       "ctrl-\\": "terminal_panel::ToggleFocus"
     }
@@ -157,10 +157,10 @@
   {
     "context": "Terminal",
     "bindings": {
-      "ctrl-h": ["work,::ActivatePaneInDirection", "Left"],
-      "ctrl-l": ["work,::ActivatePaneInDirection", "Right"],
-      "ctrl-k": ["work,::ActivatePaneInDirection", "Up"],
-      "ctrl-j": ["work,::ActivatePaneInDirection", "Down"]
+      "ctrl-h": ["workspace::ActivatePaneInDirection", "Left"],
+      "ctrl-l": ["workspace::ActivatePaneInDirection", "Right"],
+      "ctrl-k": ["workspace::ActivatePaneInDirection", "Up"],
+      "ctrl-j": ["workspace::ActivatePaneInDirection", "Down"]
     }
   },
   // File panel (netrw)
@@ -178,24 +178,24 @@
       "q": "workspace::ToggleRightDock",
       ", e": "workspace::ToggleRightDock",
       // Navigate between panel
-      "ctrl-h": ["work,::ActivatePaneInDirection", "Left"],
-      "ctrl-l": ["work,::ActivatePaneInDirection", "Right"],
-      "ctrl-k": ["work,::ActivatePaneInDirection", "Up"],
-      "ctrl-j": ["work,::ActivatePaneInDirection", "Down"]
+      "ctrl-h": ["workspace::ActivatePaneInDirection", "Left"],
+      "ctrl-l": ["workspace::ActivatePaneInDirection", "Right"],
+      "ctrl-k": ["workspace::ActivatePaneInDirection", "Up"],
+      "ctrl-j": ["workspace::ActivatePaneInDirection", "Down"]
     }
   },
   // Panel nagivation
   {
     "context": "Dock",
     "bindings": {
-      "ctrl-w h": ["work,::ActivatePaneInDirection", "Left"],
-      "ctrl-w l": ["work,::ActivatePaneInDirection", "Right"],
-      "ctrl-w k": ["work,::ActivatePaneInDirection", "Up"],
-      "ctrl-w j": ["work,::ActivatePaneInDirection", "Down"]
+      "ctrl-w h": ["workspace::ActivatePaneInDirection", "Left"],
+      "ctrl-w l": ["workspace::ActivatePaneInDirection", "Right"],
+      "ctrl-w k": ["workspace::ActivatePaneInDirection", "Up"],
+      "ctrl-w j": ["workspace::ActivatePaneInDirection", "Down"]
     }
   },
   {
-    "context": "Work,",
+    "context": "workspace",
     "bindings": {
       // Map VSCode like keybindings
       "cmd-b": "workspace::ToggleRightDock"
