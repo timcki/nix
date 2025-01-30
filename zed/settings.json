@@ -26,13 +26,13 @@
   "projects_online_by_default": false,
 
   // Inlay hints preconfigured by Zed: Go, Rust, Typescript and Svelte
-  "inlay_hints": { "enabled": true },
+  "inlay_hints": { "enabled": false },
   "languages": {
     // Refer https://zed.dev/docs/languages/javascript and https://zed.dev/docs/languages/typescript for more info
     "TypeScript": {
       // Refer https://github.com/jellydn/ts-inlay-hints for how to setup for Neovim and VSCode
       "inlay_hints": {
-        "enabled": true,
+        "enabled": false,
         "show_parameter_hints": false,
         "show_other_hints": true,
         "show_type_hints": true
@@ -54,7 +54,28 @@
 
   // AI assistance
   "language_models": {
-    "anthropic": { "version": "2" }
+    "anthropic": { "version": "2" },
+    "openai": {
+      "api_url": "https://openrouter.ai/api/v1",
+      "available_models": [
+        {
+          "name": "anthropic/claude-3.5-sonnet",
+          "display_name": "Claude 3.5 Sonnet",
+          "max_tokens": 64000
+        },
+        {
+          "name": "google/gemini-flash-1.5",
+          "display_name": "Gemini Flash 1.5",
+          "max_tokens": 64000
+        },
+        {
+          "name": "deepseek/deepseek-r1",
+          "display_name": "DeepSeek R1",
+          "max_tokens": 64000
+        }
+      ],
+      "version": "1"
+    }
   },
   "assistant": {
     "default_model": {

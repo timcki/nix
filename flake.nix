@@ -161,8 +161,16 @@
 
 
                       if test -z "$ANTHROPIC_API_KEY"
-                          set -gx ANTHROPIC_API_KEY (op item get anthropic.key --fields label=credential)
-                      end
+                          set -gx ANTHROPIC_API_KEY (op item get orqobbytrs3q5kgjrh7kk5caca --fields=credential)
+                      end 
+
+                      if test -z "$OPENAI_API_KEY"
+                          set -gx OPENAI_API_KEY (op item get ras7stvjo4kzxesjetl5nip6gm --fields=credential)
+                      end 
+
+                      if test -z "$OPEN_ROUTER_API_KEY"
+                          set -gx OPEN_ROUTER_API_KEY $OPENAI_API_KEY 
+                      end 
 
 
                       if test -n "$ZED_TERM"
@@ -178,7 +186,6 @@
                       end
 
                       fish_ssh_agent
-
                     '';
                 shellAliases = {
                     switchd = "darwin-rebuild switch --flake ~/.config/nix";
