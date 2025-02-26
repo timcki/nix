@@ -1,6 +1,10 @@
 {
   "vim_mode": true,
-  "vim": { "use_multiline_find": true },
+  "vim": {
+    "use_multiline_find": true,
+    "enable_vim_sneak": true
+  },
+
   "scrollbar": { "show": "never" },
 
   // Indentation, rainbow indentation
@@ -20,6 +24,10 @@
   "buffer_font_family": "Berkeley Mono",
   "buffer_font_size": 12,
   "buffer_line_height": "standard",
+  // Finder model width
+  "file_finder": {
+    "modal_width": "medium"
+  },
 
   // File management
   "tabs": { "file_icons": true },
@@ -80,13 +88,13 @@
   "assistant": {
     "default_model": {
       "provider": "anthropic",
-      "model": "claude-3-5-sonnet-latest"
+      "model": "claude-3-7-sonnet-latest"
     },
     "version": "2",
     "provider": null,
     "show_hints": false
   },
-  "features": { "inline_completion_provider": "supermaven" },
+  "features": { "edit_completion_provider": "zed" },
 
   "file_scan_exclusions": [
     "**/.git",

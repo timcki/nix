@@ -113,7 +113,7 @@
 
             go
             gopls
-            (python3.withPackages (ps: [ ps.pip ]))
+            (python3.withPackages (ps: [ ps.pip ps.uv ps.pipx ps.duckduckgo-search ]))
             poetry
             rustup
             dbmate
@@ -141,12 +141,16 @@
             PAGER = "less -RFX";
             CLAUDE_MODEL = "claude-3-5-haiku-20241022";
             HOMEBREW_NO_AUTO_UPDATE = "";
+
+            NPM_CONFIG_PREFIX = "$HOME/.local/state/npm";
+            PATH = "$HOME/.local/state/npm/bin:$PATH";
         };
 
         home.file = {
             ".config/ghostty/config".source = ./ghostty/config;
             ".config/zed/settings.json".source = ./zed/settings.json;
             ".config/zed/keymap.json".source = ./zed/keymap.json;
+            ".local/state/npm/.keep".text = "";
         };
 
         programs = {
