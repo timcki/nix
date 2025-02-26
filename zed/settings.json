@@ -4,9 +4,9 @@
     "use_multiline_find": true,
     "enable_vim_sneak": true
   },
-
-  "scrollbar": { "show": "never" },
-
+  "scrollbar": {
+    "show": "never"
+  },
   // Indentation, rainbow indentation
   "indent_guides": {
     "enabled": true,
@@ -16,7 +16,6 @@
   "vertical_scroll_margin": 0,
   "format_on_save": "on",
   "confirm_quit": true,
-
   // Visual appearance
   "theme": "Base16 Tomorrow Night",
   "ui_font_family": "SF Pro",
@@ -28,13 +27,16 @@
   "file_finder": {
     "modal_width": "medium"
   },
-
   // File management
-  "tabs": { "file_icons": true },
+  "tabs": {
+    "file_icons": true,
+    "show_diagnostics": "errors"
+  },
   "projects_online_by_default": false,
-
   // Inlay hints preconfigured by Zed: Go, Rust, Typescript and Svelte
-  "inlay_hints": { "enabled": false },
+  "inlay_hints": {
+    "enabled": false
+  },
   "languages": {
     // Refer https://zed.dev/docs/languages/javascript and https://zed.dev/docs/languages/typescript for more info
     "TypeScript": {
@@ -47,55 +49,43 @@
       }
     }
   },
-
   // Terminal settings
   "terminal": {
     "line_height": "standard",
-    "env": { "EDITOR": "zed --wait" }
+    "env": {
+      "EDITOR": "zed --wait"
+    }
   },
-
   // File syntax highlighting
   "file_types": {
     "Dockerfile": ["Dockerfile", "Dockerfile.*"],
     "JSON": ["json", "jsonc", "*.code-snippets"]
   },
-
   // AI assistance
   "language_models": {
     "anthropic": { "version": "2" },
-    "openai": {
-      "api_url": "https://openrouter.ai/api/v1",
-      "available_models": [
-        {
-          "name": "anthropic/claude-3.5-sonnet",
-          "display_name": "Claude 3.5 Sonnet",
-          "max_tokens": 64000
-        },
-        {
-          "name": "google/gemini-flash-1.5",
-          "display_name": "Gemini Flash 1.5",
-          "max_tokens": 64000
-        },
-        {
-          "name": "deepseek/deepseek-r1",
-          "display_name": "DeepSeek R1",
-          "max_tokens": 64000
-        }
-      ],
-      "version": "1"
-    }
+    "openai": { "version": "2" }
   },
   "assistant": {
     "default_model": {
-      "provider": "anthropic",
-      "model": "claude-3-7-sonnet-latest"
+      "provider": "google",
+      "model": "gemini-2-5-pro"
     },
     "version": "2",
     "provider": null,
     "show_hints": false
   },
-  "features": { "edit_completion_provider": "zed" },
-
+  "features": {
+    "edit_prediction_provider": "zed"
+    // "edit_completion_provider": "zed"
+  },
+  "context_servers": {
+    "mcp-server-brave-search": {
+      "settings": {
+        "brave_api_key": "BSAU1CMixX9unOI486zJ-ygY66x7urC"
+      }
+    }
+  },
   "file_scan_exclusions": [
     "**/.git",
     "**/.svn",
@@ -122,10 +112,10 @@
     ".aider*",
     "**/.aider*"
   ],
-
   // Features and experiments
-  "experiments": { "experimental_themes": true },
-
+  "experiments": {
+    "experimental_themes": true
+  },
   // System behavior
   "auto_update": true
 }

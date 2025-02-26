@@ -16,20 +16,21 @@
     outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager }:
     let
     shared-configuration = { pkgs, nix-darwin, home-manager, ... }: {
-       services.nix-daemon.enable = true;
+        nix.enable = false;
+        # services.nix-daemon.enable = true;
         # enable sudo with touchid
-        security.pam.enableSudoTouchIdAuth = true;
+        security.pam.services.sudo_local.touchIdAuth = true;
 
         # necessary for using flakes on this system.
-        nix.settings.experimental-features = "nix-command flakes";
+        # nix.settings.experimental-features = "nix-command flakes";
 
-        nix.gc = {
-          automatic = true;
-          interval = {
-              Day = 3;
-          };
-          options = "--delete-older-than 3d";
-        };
+        # nix.gc = {
+        #   automatic = true;
+        #   interval = {
+        #       Day = 3;
+        #   };
+        #   options = "--delete-older-than 3d";
+        # };
 
         system.configurationRevision = self.rev or self.dirtyrev or null;
 
@@ -139,7 +140,6 @@
             TERM = "xterm-256color";
             USERNAME = "tim";
             PAGER = "less -RFX";
-            CLAUDE_MODEL = "claude-3-5-haiku-20241022";
             HOMEBREW_NO_AUTO_UPDATE = "";
 
             NPM_CONFIG_PREFIX = "$HOME/.local/state/npm";
@@ -165,16 +165,16 @@
 
 
                       if test -z "$ANTHROPIC_API_KEY"
-                          set -gx ANTHROPIC_API_KEY (op item get orqobbytrs3q5kgjrh7kk5caca --fields=credential)
-                      end 
+                          set -gx ANTHROPIC_API_KEY (op item get orqobbytrs3q5kgjrh7kk5caca --fields=credential --reveal)
+                      end
 
                       if test -z "$OPENAI_API_KEY"
-                          set -gx OPENAI_API_KEY (op item get ras7stvjo4kzxesjetl5nip6gm --fields=credential)
-                      end 
+                          set -gx OPENAI_API_KEY (op item get cfjnlwmstlkg5rc36yadjtgiiy --fields=credential --reveal)
+                      end
 
                       if test -z "$OPEN_ROUTER_API_KEY"
-                          set -gx OPEN_ROUTER_API_KEY $OPENAI_API_KEY 
-                      end 
+                          set -gx OPEN_ROUTER_API_KEY (op item get ras7stvjo4kzxesjetl5nip6gm --fields=credential --reveal)
+                      end
 
 
                       if test -n "$ZED_TERM"
@@ -207,22 +207,23 @@
                     jn = "jj next";
                     jp = "jj prev";
                     jb = "jj bookmark";
+                    jg = "jj git";
 
                     # misc
                     dc = "docker compose";
                 };
             };
             zoxide.enable = true;
-            carapace = {
-                enable = true;
-                enableNushellIntegration = true;
-            };
+            # carapace = {
+            #     enable = true;
+            #     enableNushellIntegration = true;
+            # };
 
             starship = {
                 enable = true;
                 settings = {
                     add_newline = false;
-                    format = "$sudo$directory$jj_status$character";
+                    format = "$sudo$directory$jj_branch $jj_changeid$character";
 
                     character.success_symbol = "[→](bold green)";
                     character.error_symbol = "[→](bold red)";
@@ -231,8 +232,20 @@
 
 
                     line_break.disabled = true;
-                    jj_status.symbol = "";
-                    jj_status.no_description_symbol = " ✎";
+                    custom = {
+                        jj_branch = {
+                            when = "jj workspace root --ignore-working-copy";
+                            command = ''
+                                jj log -r "(immutable_heads()..@):: & bookmarks()" -T 'local_bookmarks.join("\n") ++ "\n"' --no-graph --ignore-working-copy | head -n 1
+                            '';
+                            style = "yellow";
+                        };
+                        jj_changeid = {
+                          when = "jj workspace root --ignore-working-copy";
+                          command = "jj log -T \"change_id.short()\" --no-graph --ignore-working-copy -r @";
+                          style = "bright-purple";
+                        };
+                    };
                 };
             };
 
@@ -268,6 +281,7 @@
                 modules = [
                     shared-configuration
                     bigboi-configuration
+                    # determinate.darwinModules.default
                     home-manager.darwinModules.home-manager {
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
@@ -275,6 +289,7 @@
                         home-manager.backupFileExtension = "bak";
                         home-manager.users.tim = homeconfig;
                     }
+
                 ];
             };
 
@@ -282,6 +297,7 @@
                 modules = [
                     shared-configuration
                     small-configuration
+                    # determinate.darwinModules.default
                     home-manager.darwinModules.home-manager {
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
