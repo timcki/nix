@@ -62,17 +62,17 @@
     "JSON": ["json", "jsonc", "*.code-snippets"]
   },
   // AI assistance
-  "language_models": {
-    "anthropic": { "version": "2" },
-    "openai": { "version": "2" }
-  },
+  // "language_models": {
+  //   "anthropic": { "version": "2" },
+  //   "openai": { "version": "2" },
+  //   "google": { "version": "2" }
+  // },
   "assistant": {
     "default_model": {
-      "provider": "google",
-      "model": "gemini-2-5-pro"
+      "provider": "openai",
+      "model": "gpt-4.1"
     },
     "version": "2",
-    "provider": null,
     "show_hints": false
   },
   "features": {

@@ -16,21 +16,20 @@
     outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager }:
     let
     shared-configuration = { pkgs, nix-darwin, home-manager, ... }: {
-        nix.enable = false;
-        # services.nix-daemon.enable = true;
+        nix.enable = true;
         # enable sudo with touchid
         security.pam.services.sudo_local.touchIdAuth = true;
 
         # necessary for using flakes on this system.
-        # nix.settings.experimental-features = "nix-command flakes";
+        nix.settings.experimental-features = "nix-command flakes";
 
-        # nix.gc = {
-        #   automatic = true;
-        #   interval = {
-        #       Day = 3;
-        #   };
-        #   options = "--delete-older-than 3d";
-        # };
+        nix.gc = {
+          automatic = true;
+          interval = {
+              Day = 3;
+          };
+          options = "--delete-older-than 3d";
+        };
 
         system.configurationRevision = self.rev or self.dirtyrev or null;
 
