@@ -18,28 +18,28 @@ font-size = 12
 
 theme = Tomorrow Night
 
-; palette = 0=#1d1f21
-; palette = 1=#cc6666
-; palette = 2=#b5bd68
-; palette = 3=#f0c674
-; palette = 4=#81a2be
-; palette = 5=#b294bb
-; palette = 6=#8abeb7
-; palette = 7=#ffffff
+palette = 0=#1d1f21
+palette = 1=#cc6666
+palette = 2=#b5bd68
+palette = 3=#f0c674
+palette = 4=#81a2be
+palette = 5=#b294bb
+palette = 6=#8abeb7
+palette = 7=#ffffff
 
-; # bold black
-; palette = 8=#969896
-; # bold red
-; palette = 9=#cc6666
-; # bold green
-; palette = 10=#b5bd68
-; # bold yellow
-; palette = 11=#f0c674
-; # bold blue
-; palette = 12=#81a2be
-; # bold magenta
-; palette = 13=#b294bb
-; # bold cyan
-; palette = 14=#8abeb7
-; # bold white
-; palette = 15=#ffffff
+# bold black
+palette = 8=#969896
+# bold red
+palette = 9=#cc6666
+# bold green
+palette = 10=#b5bd68
+# bold yellow
+palette = 11=#f0c674
+# bold blue
+palette = 12=#81a2be
+# bold magenta
+palette = 13=#b294bb
+# bold cyan
+palette = 14=#8abeb7
+# bold white
+palette = 15=#ffffff
