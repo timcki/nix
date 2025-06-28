@@ -6,6 +6,7 @@
     ./programs/fish.nix
     ./programs/starship.nix
     ./programs/development.nix
+    ./programs/gh.nix
   ];
 
   # Home Manager configuration

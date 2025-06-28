@@ -41,6 +41,7 @@
 
     # Version control
     jujutsu
+    gh
 
     # Media
     ffmpeg
