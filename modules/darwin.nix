@@ -48,6 +48,7 @@
 
   system.configurationRevision = null;
   system.stateVersion = 4;
+  system.primaryUser = "tim";
   nixpkgs.hostPlatform = "aarch64-darwin";
 
   # User configuration
@@ -77,5 +78,22 @@
       autoUpdate = true;
       cleanup = "uninstall";
     };
+    
+    # Shared homebrew packages for all machines
+    casks = [
+      "zed@preview"
+      "discord"
+      "vimr"
+      "1password@nightly"
+      "1password-cli@beta"
+      "jordanbaird-ice"
+      "rectangle"
+      "ghostty"
+    ];
+
+    brews = [
+      "cargo-binstall"
+      "llm"
+    ];
   };
 }

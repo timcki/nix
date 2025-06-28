@@ -46,21 +46,4 @@
     # Media
     ffmpeg
   ];
-
-  # Shared homebrew packages
-  homebrew.casks = [
-    "zed@preview"
-    "discord"
-    "vimr"
-    "1password@nightly"
-    "1password-cli@beta"
-    "jordanbaird-ice"
-    "rectangle"
-    "ghostty"
-  ];
-
-  homebrew.brews = [
-    "cargo-binstall"
-    "llm"
-  ];
 }
