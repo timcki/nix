@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   imports = [
@@ -29,8 +34,8 @@
 
   home.file = {
     ".config/ghostty/config".source = ./programs/ghostty/config;
-    ".config/zed/settings.json".source = ./programs/zed/settings.json;
-    ".config/zed/keymap.json".source = ./programs/zed/keymap.json;
+    # ".config/zed/settings.json".source = ./programs/zed/settings.json;
+    # ".config/zed/keymap.json".source = ./programs/zed/keymap.json;
     ".local/state/npm/.keep".text = "";
   };
 }

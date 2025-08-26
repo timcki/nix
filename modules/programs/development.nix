@@ -1,9 +1,14 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   programs = {
     zoxide.enable = true;
-    
+
     jujutsu = {
       enable = true;
       settings = {
@@ -19,7 +24,6 @@
           log-synthetic-elided-nodes = true;
           pager = "less -RFX";
           merge-editor = ":builtin";
-          editor = "zed --wait";
         };
         signing = {
           behavior = "own";
@@ -29,18 +33,51 @@
           "backends.ssh.program" = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
         };
         aliases = {
-          "log-recent" = [ "log" "-r" "default() & recent()" ];
-          tug = [ "bookmark" "move" "--from" "closest_bookmark(@-)" "--to" "@-" ];
+          "log-recent" = [
+            "log"
+            "-r"
+            "default() & recent()"
+          ];
+          tug = [
+            "bookmark"
+            "move"
+            "--from"
+            "closest_bookmark(@-)"
+            "--to"
+            "@-"
+          ];
           c = [ "commit" ];
-          ci = [ "commit" "--interactive" ];
+          ci = [
+            "commit"
+            "--interactive"
+          ];
           e = [ "edit" ];
-          i = [ "git" "init" "--colocate" ];
-          nb = [ "bookmark" "create" "-r" "@-" ];
-          pull = [ "git" "fetch" ];
-          push = [ "git" "push" "--allow-new" ];
+          i = [
+            "git"
+            "init"
+            "--colocate"
+          ];
+          nb = [
+            "bookmark"
+            "create"
+            "-r"
+            "@-"
+          ];
+          pull = [
+            "git"
+            "fetch"
+          ];
+          push = [
+            "git"
+            "push"
+            "--allow-new"
+          ];
           r = [ "rebase" ];
           s = [ "squash" ];
-          si = [ "squash" "--interactive" ];
+          si = [
+            "squash"
+            "--interactive"
+          ];
         };
         "revset-aliases" = {
           "closest_bookmark(to)" = "heads(::to & bookmarks())";
@@ -60,7 +97,12 @@
       enable = true;
       userName = "Tim Chmielecki";
       userEmail = "me@timcki.com";
-      ignores = [ ".DS_Store" ".jj" ".nova" ".zed" ];
+      ignores = [
+        ".DS_Store"
+        ".jj"
+        ".nova"
+        ".zed"
+      ];
 
       extraConfig = {
         init.defaultBranch = "main";
