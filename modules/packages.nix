@@ -26,14 +26,18 @@
     jq
 
     # Additional useful tools
-    dust          # better du
-    procs         # better ps
-    bottom        # better top
+    dust # better du
+    procs # better ps
+    bottom # better top
 
     # Programming languages and tools
     go
     gopls
-    (python3.withPackages (ps: [ ps.pip ps.uv ps.pipx ps.duckduckgo-search ]))
+    (python3.withPackages (ps: [
+      ps.pip
+      ps.uv
+      ps.pipx
+    ]))
     poetry
     rustup
     dbmate

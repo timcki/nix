@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   programs.fish = {
@@ -6,9 +11,6 @@
     interactiveShellInit = ''
       set fish_greeting ""
       fish_vi_key_bindings
-
-      bind \cP _fish_ai_codify_or_explain
-      bind -k nul _fish_ai_autocomplete_or_fix
 
       # API key management with error handling
       if test -z "$ANTHROPIC_API_KEY"
@@ -50,7 +52,7 @@
           fish_ssh_agent
       end
     '';
-    
+
     shellAliases = {
       switchd = "darwin-rebuild switch --flake ~/.config/nix";
       vi = "hx";

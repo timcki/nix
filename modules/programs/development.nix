@@ -19,6 +19,19 @@
         "template-aliases" = {
           "format_timestamp(timestamp)" = "timestamp.ago()";
         };
+        templates = {
+          draft_commit_description = ''
+            concat(
+              coalesce(description, default_commit_description, "\n"),
+              surround(
+                "\nJJ: This commit contains the following changes:\n", "",
+                indent("JJ:     ", diff.stat(72)),
+              ),
+              "\nJJ: ignore-rest\n",
+              diff.git(),
+            )
+          '';
+        };
         ui = {
           default-command = "log";
           log-synthetic-elided-nodes = true;
@@ -29,8 +42,8 @@
           behavior = "own";
           backend = "ssh";
           key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3zNKM+CpNS5isd8MkCbPy6qTYbPlbVeyqm3hG5FYww";
-          "backends.ssh.allowed-signers" = "/Users/tim/.ssh/git_allowed_signers";
-          "backends.ssh.program" = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
+          backends.ssh.allowed-signers = "/Users/tim/.ssh/git_allowed_signers";
+          backends.ssh.program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
         };
         aliases = {
           "log-recent" = [
@@ -90,6 +103,18 @@
         snapshot = {
           max-new-file-size = "10MiB";
         };
+        "--scope" = [
+          {
+            when.commands = [
+              "diff"
+              "show"
+            ];
+            ui = {
+              pager = "delta";
+              diff-formatter = ":git";
+            };
+          }
+        ];
       };
     };
 
