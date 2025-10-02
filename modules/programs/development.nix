@@ -38,6 +38,9 @@
           pager = "less -RFX";
           merge-editor = ":builtin";
         };
+        revsets = {
+          log = "(trunk()..@):: | (trunk()..@)-";
+        };
         signing = {
           behavior = "own";
           backend = "ssh";
@@ -50,6 +53,11 @@
             "log"
             "-r"
             "default() & recent()"
+          ];
+          ll = [
+            "log"
+            "-r"
+            "present(@) | ancestors(immutable_heads().., 2) | present(trunk())"
           ];
           tug = [
             "bookmark"
