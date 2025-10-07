@@ -128,8 +128,6 @@
 
     git = {
       enable = true;
-      userName = "Tim Chmielecki";
-      userEmail = "me@timcki.com";
       ignores = [
         ".DS_Store"
         ".jj"
@@ -137,11 +135,15 @@
         ".zed"
       ];
 
-      extraConfig = {
+      settings = {
+        user = {
+          name = "Tim Chmielecki";
+          email = "me@timcki.com";
+          signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3zNKM+CpNS5isd8MkCbPy6qTYbPlbVeyqm3hG5FYww";
+        };
         init.defaultBranch = "main";
         push.autoSetupRemote = true;
         credential.helper = "osxkeychain";
-        user.signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3zNKM+CpNS5isd8MkCbPy6qTYbPlbVeyqm3hG5FYww";
         commit.gpgsign = true;
         gpg.format = "ssh";
         merge.conflictstyle = "diff3";
