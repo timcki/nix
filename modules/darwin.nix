@@ -1,8 +1,13 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   nix.enable = true;
-  
+
   # Enable sudo with Touch ID
   security.pam.services.sudo_local.touchIdAuth = true;
 
@@ -25,21 +30,21 @@
       orientation = "bottom";
       show-recents = false;
     };
-    
+
     finder = {
       AppleShowAllExtensions = true;
       FXPreferredViewStyle = "clmv"; # Column view
       ShowPathbar = true;
       ShowStatusBar = true;
     };
-    
+
     NSGlobalDomain = {
       AppleKeyboardUIMode = 3; # Full keyboard access
       AppleShowScrollBars = "WhenScrolling";
       NSNavPanelExpandedStateForSaveMode = true;
       NSNavPanelExpandedStateForSaveMode2 = true;
     };
-    
+
     trackpad = {
       Clicking = true;
       TrackpadThreeFingerDrag = true;
@@ -59,7 +64,7 @@
   };
 
   environment.systemPackages = with pkgs; [ pam-reattach ];
-  
+
   # Hack to make pam-reattach work
   environment.etc."pam.d/sudo_local".text = ''
     # Written by nix-darwin
@@ -78,7 +83,7 @@
       autoUpdate = true;
       cleanup = "uninstall";
     };
-    
+
     # Shared homebrew packages for all machines
     casks = [
       "zed@preview"
@@ -89,6 +94,7 @@
       "jordanbaird-ice"
       "rectangle"
       "ghostty"
+      "codex"
     ];
 
     brews = [

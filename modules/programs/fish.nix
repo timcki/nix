@@ -54,7 +54,7 @@
     '';
 
     shellAliases = {
-      switchd = "darwin-rebuild switch --flake ~/.config/nix";
+      switchd = "sudo darwin-rebuild switch --flake ~/.config/nix";
       vi = "hx";
       vim = "hx";
       nano = "hx";

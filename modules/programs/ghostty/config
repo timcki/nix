@@ -1,23 +1,23 @@
-font-family = Berkeley Mono
-font-family-bold = Berkeley Mono Bold
-font-family-italic = Berkeley Mono Italic
-font-family-bold-italic = Berkeley Mono Bold Italic
+# ——— Fonts ———
+font-family = "Berkeley Mono"
+font-style = "Retina SemiCondensed"
+font-size = 12
+font-feature = +calt
+font-feature = +ss02
 
+# If text feels a bit light on macOS:
+font-thicken = true
+font-thicken-strength = 30
+
+# Only keep this if you truly need it for alignment; try without first.
 adjust-cell-width = -10%
 
-
+# ——— UI / shell ———
 window-decoration = true
-# keybind = global:cmd+shift+s=toggle_quick_terminal
 shell-integration = fish
-
-# font-feature = calt
-# font-feature = dlig
-# font-feature = liga
-font-size = 12
-
-
 theme = Tomorrow Night
 
+# Your custom palette overrides (kept as-is)
 palette = 0=#1d1f21
 palette = 1=#cc6666
 palette = 2=#b5bd68
@@ -26,20 +26,11 @@ palette = 4=#81a2be
 palette = 5=#b294bb
 palette = 6=#8abeb7
 palette = 7=#ffffff
-
-# bold black
 palette = 8=#969896
-# bold red
 palette = 9=#cc6666
-# bold green
 palette = 10=#b5bd68
-# bold yellow
 palette = 11=#f0c674
-# bold blue
 palette = 12=#81a2be
-# bold magenta
 palette = 13=#b294bb
-# bold cyan
 palette = 14=#8abeb7
-# bold white
 palette = 15=#ffffff
