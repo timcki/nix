@@ -11,6 +11,11 @@
 
     jujutsu = {
       enable = true;
+      package = pkgs.jujutsu.override {
+        cargo-nextest = pkgs.cargo-nextest.overrideAttrs (old: {
+          version = "0.9.72"; # or any version before 0.9.108
+        });
+      };
       settings = {
         user = {
           name = "Tim Chmielecki";
@@ -58,6 +63,13 @@
             "log"
             "-r"
             "present(@) | ancestors(immutable_heads().., 2) | present(trunk())"
+          ];
+          diff-trunk = [
+            "diff"
+            "--from"
+            "trunk()"
+            "--to"
+            "@"
           ];
           tug = [
             "bookmark"
