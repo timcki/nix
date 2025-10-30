@@ -11,11 +11,6 @@
 
     jujutsu = {
       enable = true;
-      package = pkgs.jujutsu.override {
-        cargo-nextest = pkgs.cargo-nextest.overrideAttrs (old: {
-          version = "0.9.72"; # or any version before 0.9.108
-        });
-      };
       settings = {
         user = {
           name = "Tim Chmielecki";

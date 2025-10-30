@@ -21,6 +21,7 @@
     git
     ripgrep
     tmux
+    zellij
     zoxide
     carapace
     jq

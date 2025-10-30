@@ -31,19 +31,19 @@
           end
       end
 
-      # Improved tmux logic with error handling
+      # Improved zellij logic with error handling
       if test -n "$ZED_TERM"
           if test "$ZED_TERM" != "true"
-              if not set -q TMUX
-                  if command -v tmux >/dev/null 2>&1
-                      tmux attach -t default 2>/dev/null; or tmux new -s default
+              if not set -q ZELLIJ
+                  if command -v zellij >/dev/null 2>&1
+                      zellij attach -c default
                   end
               end
           end
       else
-          if not set -q TMUX
-              if command -v tmux >/dev/null 2>&1
-                  tmux attach -t default 2>/dev/null; or tmux new -s default
+          if not set -q ZELLIJ
+              if command -v zellij >/dev/null 2>&1
+                  zellij attach -c default
               end
           end
       end
