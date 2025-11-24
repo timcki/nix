@@ -47,6 +47,10 @@
     # Version control
     jujutsu
     gh
+    delta
+
+    # dotfiles
+    chezmoi
 
     # Media
     ffmpeg
