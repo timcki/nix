@@ -95,6 +95,7 @@
       "rectangle"
       "ghostty"
       "codex"
+      "tailscale-app"
     ];
 
     brews = [

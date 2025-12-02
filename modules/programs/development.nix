@@ -98,7 +98,6 @@
           push = [
             "git"
             "push"
-            "--allow-new"
           ];
           r = [ "rebase" ];
           s = [ "squash" ];
@@ -112,8 +111,9 @@
           "immutable_heads()" = "builtin_immutable_heads() & remote_bookmarks()";
           "recent()" = "committer_date(after:\"3 months ago\")";
         };
-        git = {
-          push-new-bookmarks = true;
+        git.push-new-bookmarks = true;
+        remotes.origin = {
+          auto-track-bookmarks = "glob:*";
         };
         snapshot = {
           max-new-file-size = "10MiB";
@@ -155,6 +155,25 @@
         gpg.format = "ssh";
         merge.conflictstyle = "diff3";
         diff.colormoved = "default";
+        delta = {
+          "side-by-side" = true;
+          "line-numbers" = true;
+          navigate = true;
+          light = false;
+          "syntax-theme" = "base16-256";
+          hyperlinks = true;
+
+          # Better visual separation
+          "file-style" = "bold yellow";
+          "file-decoration-style" = "yellow box";
+          "hunk-header-style" = "file line-number syntax";
+
+          # Improved highlighting
+          "minus-style" = "syntax \"#3f0001\"";
+          "minus-emph-style" = "syntax \"#900009\"";
+          "plus-style" = "syntax \"#002800\"";
+          "plus-emph-style" = "syntax \"#007800\"";
+        };
       };
     };
   };

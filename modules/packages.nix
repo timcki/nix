@@ -30,6 +30,8 @@
     dust # better du
     procs # better ps
     bottom # better top
+    zola
+    typst
 
     # Programming languages and tools
     go

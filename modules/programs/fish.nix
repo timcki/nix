@@ -12,6 +12,9 @@
       set fish_greeting ""
       fish_vi_key_bindings
 
+      # enable truecolor support for nvim/helix in zellij
+      set -gx COLORTERM truecolor
+
       # API key management with error handling
       if test -z "$ANTHROPIC_API_KEY"
           if command -v op >/dev/null 2>&1

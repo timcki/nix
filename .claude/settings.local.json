@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(jj config:*)",
+      "WebFetch(domain:jj-vcs.github.io)",
+      "WebFetch(domain:docs.jj-vcs.dev)",
+      "WebFetch(domain:man.archlinux.org)"
+    ]
+  }
+}
