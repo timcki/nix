@@ -14,6 +14,7 @@
   # Nix configuration
   ids.gids.nixbld = 350;
   nix.settings.experimental-features = "nix-command flakes";
+  nixpkgs.config.allowUnfree = true;
 
   nix.gc = {
     automatic = true;

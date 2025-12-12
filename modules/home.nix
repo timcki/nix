@@ -23,7 +23,7 @@
   home.sessionVariables = {
     EDITOR = "nvim";
     BAT_PAGER = "less -XRF";
-    BAT_THEME = "base16-256";
+    BAT_THEME = "base16";
     FZF_DEFAULT_OPTS = "--height 40% --layout=reverse";
     TERM = "xterm-256color";
     USERNAME = "tim";
@@ -31,13 +31,15 @@
 
     NPM_CONFIG_PREFIX = "$HOME/.local/state/npm";
     PATH = "$HOME/.local/state/npm/bin:$PATH";
-  } // lib.optionalAttrs pkgs.stdenv.isDarwin {
+  }
+  // lib.optionalAttrs pkgs.stdenv.isDarwin {
     HOMEBREW_NO_AUTO_UPDATE = "";
   };
 
   home.file = {
     ".local/state/npm/.keep".text = "";
-  } // lib.optionalAttrs pkgs.stdenv.isDarwin {
+  }
+  // lib.optionalAttrs pkgs.stdenv.isDarwin {
     ".config/ghostty/config".source = ./programs/ghostty/config;
     # ".config/zed/settings.json".source = ./programs/zed/settings.json;
     # ".config/zed/keymap.json".source = ./programs/zed/keymap.json;
