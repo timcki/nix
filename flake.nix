@@ -31,6 +31,23 @@
           }
         ];
       };
+
+    # Helper function to create a nixos system configuration
+    mkNixosSystem = { system ? "x86_64-linux", machineModule }:
+      nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          ./modules/nixos.nix
+          machineModule
+          home-manager.nixosModules.home-manager {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.verbose = false;
+            home-manager.backupFileExtension = "bak";
+            home-manager.users.tim = ./modules/home.nix;
+          }
+        ];
+      };
   in {
     darwinConfigurations = {
       bigboi = mkDarwinSystem {
@@ -39,6 +56,12 @@
 
       small = mkDarwinSystem {
         machineModule = ./modules/machines/small.nix;
+      };
+    };
+
+    nixosConfigurations = {
+      bigchungus = mkNixosSystem {
+        machineModule = ./modules/machines/bigchungus.nix;
       };
     };
   };

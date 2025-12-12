@@ -8,11 +8,17 @@
 {
   imports = [
     ./packages.nix
-    ./programs/fish.nix
     ./programs/starship.nix
-    ./programs/development.nix
     ./programs/gh.nix
-  ];
+  ] ++ (
+    if pkgs.stdenv.isDarwin then [
+      ./programs/darwin/fish.nix
+      ./programs/darwin/development.nix
+    ] else [
+      ./programs/nixos/fish.nix
+      ./programs/nixos/development.nix
+    ]
+  );
 
   # Home Manager configuration
   home.stateVersion = "23.05";
@@ -26,16 +32,18 @@
     TERM = "xterm-256color";
     USERNAME = "tim";
     PAGER = "less -RFX";
-    HOMEBREW_NO_AUTO_UPDATE = "";
 
     NPM_CONFIG_PREFIX = "$HOME/.local/state/npm";
     PATH = "$HOME/.local/state/npm/bin:$PATH";
+  } // lib.optionalAttrs pkgs.stdenv.isDarwin {
+    HOMEBREW_NO_AUTO_UPDATE = "";
   };
 
   home.file = {
+    ".local/state/npm/.keep".text = "";
+  } // lib.optionalAttrs pkgs.stdenv.isDarwin {
     ".config/ghostty/config".source = ./programs/ghostty/config;
     # ".config/zed/settings.json".source = ./programs/zed/settings.json;
     # ".config/zed/keymap.json".source = ./programs/zed/keymap.json;
-    ".local/state/npm/.keep".text = "";
   };
 }
