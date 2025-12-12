@@ -25,6 +25,8 @@
     zoxide
     carapace
     jq
+    mosh
+    just
 
     # Additional useful tools
     dust # better du
