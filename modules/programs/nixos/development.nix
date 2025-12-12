@@ -11,6 +11,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
 
     ssh = {
       enable = true;
+      enableDefaultConfig = false;
       matchBlocks."*".addKeysToAgent = "yes";
     };
 

@@ -13,6 +13,7 @@
     # Language servers and development tools
     nixd
     nil
+    claude-code
 
     # Core utilities
     bat
@@ -38,11 +39,7 @@
     # Programming languages and tools
     go
     gopls
-    (python3.withPackages (ps: [
-      ps.pip
-      ps.uv
-      ps.pipx
-    ]))
+    (python3.withPackages (ps: [ ps.pip ps.uv ps.pipx ]))
     poetry
     rustup
     dbmate
