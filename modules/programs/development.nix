@@ -111,7 +111,6 @@
           "immutable_heads()" = "builtin_immutable_heads() & remote_bookmarks()";
           "recent()" = "committer_date(after:\"3 months ago\")";
         };
-        git.push-new-bookmarks = true;
         remotes.origin = {
           auto-track-bookmarks = "glob:*";
         };
