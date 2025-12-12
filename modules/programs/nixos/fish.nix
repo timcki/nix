@@ -6,7 +6,7 @@
 }:
 
 {
-  programs.fish = {
+  programs.fish = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
     enable = true;
     interactiveShellInit = ''
       set fish_greeting ""
@@ -35,14 +35,10 @@
       end
 
       # No auto-start zellij on NixOS (prevents nested sessions when SSH from mac)
-
-      if command -v fish_ssh_agent >/dev/null 2>&1
-          fish_ssh_agent
-      end
     '';
 
     shellAliases = {
-      switch = "sudo nixos-rebuild switch --flake ~/.config/nix";
+      switchn = "sudo nixos-rebuild switch --flake ~/.config/nix";
       vi = "hx";
       vim = "hx";
       nano = "hx";

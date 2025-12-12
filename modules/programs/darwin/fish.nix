@@ -6,7 +6,7 @@
 }:
 
 {
-  programs.fish = {
+  programs.fish = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     enable = true;
     interactiveShellInit = ''
       set fish_greeting ""

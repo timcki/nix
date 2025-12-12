@@ -5,9 +5,14 @@
   ...
 }:
 
-{
+lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
   programs = {
     zoxide.enable = true;
+
+    ssh = {
+      enable = true;
+      matchBlocks."*".addKeysToAgent = "yes";
+    };
 
     jujutsu = {
       enable = true;
@@ -44,7 +49,7 @@
         signing = {
           behavior = "own";
           backend = "ssh";
-          key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3zNKM+CpNS5isd8MkCbPy6qTYbPlbVeyqm3hG5FYww";
+          key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICBhciZJdPz1Kq8li2Hs5JLgD4lnhlAtu+0mX65swXpN";
           backends.ssh.allowed-signers = "/home/tim/.ssh/git_allowed_signers";
           backends.ssh.program = "ssh-keygen";
         };
@@ -145,7 +150,7 @@
         user = {
           name = "Tim Chmielecki";
           email = "me@timcki.com";
-          signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3zNKM+CpNS5isd8MkCbPy6qTYbPlbVeyqm3hG5FYww";
+          signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICBhciZJdPz1Kq8li2Hs5JLgD4lnhlAtu+0mX65swXpN";
         };
         init.defaultBranch = "main";
         push.autoSetupRemote = true;

@@ -5,7 +5,7 @@
   ...
 }:
 
-{
+lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   programs = {
     zoxide.enable = true;
 

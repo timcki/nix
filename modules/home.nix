@@ -10,15 +10,11 @@
     ./packages.nix
     ./programs/starship.nix
     ./programs/gh.nix
-  ] ++ (
-    if pkgs.stdenv.isDarwin then [
-      ./programs/darwin/fish.nix
-      ./programs/darwin/development.nix
-    ] else [
-      ./programs/nixos/fish.nix
-      ./programs/nixos/development.nix
-    ]
-  );
+    ./programs/darwin/fish.nix
+    ./programs/darwin/development.nix
+    ./programs/nixos/fish.nix
+    ./programs/nixos/development.nix
+  ];
 
   # Home Manager configuration
   home.stateVersion = "23.05";

@@ -45,6 +45,7 @@
       vimAlias = true;
     };
     mosh.enable = true;
+    ssh.startAgent = true;
   };
 
   # Networking firewall rules for mosh
