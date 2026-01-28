@@ -1,0 +1,150 @@
+[server]
+bind = "0.0.0.0:3000"
+api_key = "83137f7a8fd8a7cae994f09bec2115e1"
+
+[database]
+path = "slurp.db"
+
+[fetcher]
+interval_minutes = 30
+
+[[groups]]
+name = "tech"
+
+[[groups]]
+name = "music"
+
+[[groups]]
+name = "uncategorized"
+
+[[groups]]
+name = "geopolitics"
+
+[[feeds]]
+url = "https://simonwillison.net/atom/everything/"
+group = "tech"
+
+[[feeds]]
+url = "https://blog.hayman.net/feed/"
+group = "tech"
+
+[[feeds]]
+url = "https://aspetuck.substack.com/feed/"
+group = "music"
+
+[[feeds]]
+url = "https://soatok.blog/feed/"
+group = "tech"
+
+[[feeds]]
+url = "https://flak.tedunangst.com/rss"
+group = "tech"
+
+[[feeds]]
+url = "https://nocoffei.com/?feed=rss2"
+group = "tech"
+
+[[feeds]]
+url = "https://jacko.io/rss.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://thesquareplanet.com/feed.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://kobzol.github.io/feed.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://lcamtuf.substack.com/feed/"
+group = "tech"
+
+[[feeds]]
+url = "https://techletters.substack.com/feed/"
+group = "tech"
+
+[[feeds]]
+url = "https://lalinsky.com/feed.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://matklad.github.io/feed.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://mcyoung.xyz/atom.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://mijndertstuij.nl/feed.xml"
+group = "uncategorized"
+
+[[feeds]]
+url = "https://ntietz.com/atom.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://numergent.com/atom.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://olano.dev/feed.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://anchor.fm/s/10962398c/podcast/rss?ref=powering-the-planet.ghost.io"
+group = "geopolitics"
+
+[[feeds]]
+url = "http://www.potaroo.net/rss.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://powering-the-planet.ghost.io/feed/"
+group = "geopolitics"
+
+[[feeds]]
+url = "https://registerspill.thorstenball.com/feed/"
+group = "tech"
+
+[[feeds]]
+url = "https://www.saxrag.com/feed.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://seated.ro/rss.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://steveklabnik.com/feed.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://sunshowers.io/atom.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://susam.net/feed.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://tigerbeetle.com/blog/atom.xml"
+group = "tech"
+
+[[feeds]]
+url = "https://vladvexler.substack.com/feed"
+group = "geopolitics"
+
+[[feeds]]
+url = "https://www.workingtheorys.com/feed/"
+group = "uncategorized"
+
+[[feeds]]
+url = "https://xeiaso.net/blog.rss"
+group = "tech"
+
+[[feeds]]
+url = "https://xnacly.me/index.xml"
+group = "tech"
+

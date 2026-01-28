@@ -11,9 +11,13 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    slurp = {
+      url = "git+file:///home/tim/slurp";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager }:
+  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, slurp }:
   let
     # Helper function to create a darwin system configuration
     mkDarwinSystem = { system ? "aarch64-darwin", machineModule }:
@@ -36,6 +40,7 @@
     mkNixosSystem = { system ? "x86_64-linux", machineModule }:
       nixpkgs.lib.nixosSystem {
         inherit system;
+        specialArgs = { inherit slurp; };
         modules = [
           ./modules/nixos.nix
           machineModule

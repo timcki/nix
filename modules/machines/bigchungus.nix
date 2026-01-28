@@ -1,8 +1,9 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, slurp, ... }:
 
 {
   imports = [
     ./bigchungus-hardware.nix
+    ../services/slurp.nix
   ];
 
   # Boot loader configuration
@@ -38,8 +39,24 @@
       };
     };
 
+    caddy = {
+      enable = true;
+      virtualHosts."http://0.0.0.0:8080" = {
+        extraConfig = ''
+          root * /var/www/tymek.me/public
+          file_server
+        '';
+      };
+    };
+
     tailscale.enable = true;
+
+    slurp = {
+      enable = true;
+      configFile = ../../config/slurp/slurp.toml;
+    };
   };
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 ];
 
   system.stateVersion = "25.11";
 }
