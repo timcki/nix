@@ -21,4 +21,9 @@
       };
     };
   };
+
+  # Install gh extensions via activation script
+  home.activation.installGhExtensions = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    ${pkgs.gh}/bin/gh extension install silouanwright/gh-comment 2>/dev/null || true
+  '';
 }
