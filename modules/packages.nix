@@ -1,7 +1,13 @@
 { pkgs, lib, ... }:
 
+let
+  pi = pkgs.writeShellScriptBin "pi" ''
+    exec ${pkgs.nodejs}/bin/npx --yes @mariozechner/pi-coding-agent@latest "$@"
+  '';
+in
 {
   home.packages = with pkgs; [
+    pi
     # Terminals and shells
     fish
     starship
