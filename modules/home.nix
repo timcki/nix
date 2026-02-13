@@ -28,6 +28,7 @@
       tools = {
         "npm:@anthropic-ai/claude-code" = "latest";
         "npm:@mariozechner/pi-coding-agent" = "latest";
+      } // lib.optionalAttrs pkgs.stdenv.isDarwin {
         poetry = "latest";
         rust = "latest";
         go = "latest";

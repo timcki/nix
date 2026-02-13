@@ -55,5 +55,14 @@
 
     # Media
     ffmpeg
+  ] ++ lib.optionals pkgs.stdenv.isLinux [
+    # On NixOS these are managed by Nix instead of mise
+    nodejs
+    rustup
+    go
+    yarn
+    k9s
+    cargo-binstall
+    poetry
   ];
 }
