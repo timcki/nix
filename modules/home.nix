@@ -20,6 +20,25 @@
   home.stateVersion = "23.05";
   programs.home-manager.enable = true;
 
+  # Mise - manage language runtimes and dev tools
+  programs.mise = {
+    enable = true;
+    enableFishIntegration = true;
+    globalConfig = {
+      tools = {
+        "npm:@anthropic-ai/claude-code" = "latest";
+        "npm:@mariozechner/pi-coding-agent" = "latest";
+        poetry = "latest";
+        rust = "latest";
+        go = "latest";
+        node = "lts";
+        yarn = "latest";
+        k9s = "latest";
+        cargo-binstall = "latest";
+      };
+    };
+  };
+
   home.sessionVariables = {
     EDITOR = "nvim";
     BAT_PAGER = "less -XRF";

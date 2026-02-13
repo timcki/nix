@@ -1,13 +1,11 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  ...
+}:
 
-let
-  pi = pkgs.writeShellScriptBin "pi" ''
-    exec ${pkgs.nodejs}/bin/npx --yes @mariozechner/pi-coding-agent@latest "$@"
-  '';
-in
 {
   home.packages = with pkgs; [
-    pi
     # Terminals and shells
     fish
     starship
@@ -19,11 +17,11 @@ in
     # Language servers and development tools
     nixd
     nil
-    claude-code
 
     # Core utilities
     bat
     eza
+    fd
     fzf
     git
     ripgrep
@@ -43,13 +41,9 @@ in
     typst
 
     # Programming languages and tools
-    go
     gopls
     (python3.withPackages (ps: [ ps.pip ps.uv ps.pipx ]))
-    poetry
-    rustup
     dbmate
-    nodejs
 
     # Version control
     jujutsu

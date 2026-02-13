@@ -99,9 +99,6 @@
       "tailscale-app"
     ];
 
-    brews = [
-      "cargo-binstall"
-      "llm"
-    ];
+    brews = [ ];
   };
 }
