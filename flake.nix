@@ -11,13 +11,9 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    slurp = {
-      url = "git+file:///home/tim/slurp";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, slurp }:
+  outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ... }:
   let
     # Helper function to create a darwin system configuration
     mkDarwinSystem = { system ? "aarch64-darwin", machineModule }:
@@ -37,6 +33,10 @@
       };
 
     # Helper function to create a nixos system configuration
+    # slurp is fetched locally on the NixOS server where the repo exists,
+    # rather than as a flake input, so macOS machines don't need it.
+    slurp = builtins.getFlake "git+file:///home/tim/slurp";
+
     mkNixosSystem = { system ? "x86_64-linux", machineModule }:
       nixpkgs.lib.nixosSystem {
         inherit system;
