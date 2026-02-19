@@ -36,8 +36,7 @@
           default-command = "log";
           log-synthetic-elided-nodes = true;
           pager = "less -RFX";
-          diff-editor = ["ksdiff" "--merge" "$left" "$right"];
-          merge-editor = ["ksdiff" "--merge" "$left" "$right" "--base" "$base" "-o" "$output"];
+          merge-editor = ":builtin";
         };
         revsets = {
           log = "(trunk()..@):: | (trunk()..@)-";

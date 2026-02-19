@@ -36,8 +36,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
           default-command = "log";
           log-synthetic-elided-nodes = true;
           pager = "less -RFX";
-          diff-editor = ["ksdiff" "--merge" "$left" "$right"];
-          merge-editor = ["ksdiff" "--merge" "$left" "$right" "--base" "$base" "-o" "$output"];
+          merge-editor = ":builtin";
         };
         revsets = {
           log = "(trunk()..@):: | (trunk()..@)-";
@@ -75,6 +74,8 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
             "--to"
             "@-"
           ];
+          gdiff = ["diff" "--tool" "ksdiff"];
+          gresolve = ["resolve" "--tool" "ksdiff"];
           c = [ "commit" ];
           ci = [
             "commit"
@@ -114,6 +115,11 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
         };
         remotes.origin = {
           auto-track-bookmarks = "glob:*";
+        };
+        merge-tools.ksdiff = {
+          program = "ksdiff";
+          edit-args = ["--merge" "$left" "$right"];
+          merge-args = ["--merge" "$left" "$right" "--base" "$base" "-o" "$output"];
         };
         snapshot = {
           max-new-file-size = "10MiB";
