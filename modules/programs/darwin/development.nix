@@ -36,7 +36,8 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
           default-command = "log";
           log-synthetic-elided-nodes = true;
           pager = "less -RFX";
-          merge-editor = ":builtin";
+          diff-editor = ["ksdiff" "--merge" "$left" "$right"];
+          merge-editor = ["ksdiff" "--merge" "$left" "$right" "--base" "$base" "-o" "$output"];
         };
         revsets = {
           log = "(trunk()..@):: | (trunk()..@)-";
