@@ -15,6 +15,11 @@
       # enable truecolor support for nvim/helix in zellij
       set -gx COLORTERM truecolor
 
+      # Source secrets file if it exists (API keys, etc.)
+      if test -f ~/.secrets
+          source ~/.secrets
+      end
+
       # auto-attach to zellij (skip in Zed terminal)
       if test "$ZED_TERM" != "true"; and not set -q ZELLIJ; and command -v zellij >/dev/null 2>&1
           zellij attach -c default
