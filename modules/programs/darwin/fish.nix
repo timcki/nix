@@ -22,7 +22,7 @@
 
       # auto-attach to zellij (skip in Zed terminal)
       if test "$ZED_TERM" != "true"; and not set -q ZELLIJ; and command -v zellij >/dev/null 2>&1
-          zellij attach -c default
+          zellij attach -c work
       end
 
       if command -v fish_ssh_agent >/dev/null 2>&1

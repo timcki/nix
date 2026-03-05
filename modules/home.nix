@@ -20,24 +20,12 @@
   home.stateVersion = "23.05";
   programs.home-manager.enable = true;
 
-  # Mise - manage language runtimes and dev tools
-  programs.mise = {
+  # Keep mise installed and shell-integrated on macOS.
+  # Tool versions are managed outside Nix (e.g. via chezmoi-managed
+  # ~/.config/mise/config.toml), so tools can be changed without rebuilds.
+  programs.mise = lib.mkIf pkgs.stdenv.isDarwin {
     enable = true;
     enableFishIntegration = true;
-    globalConfig = {
-      tools = {
-        "npm:@anthropic-ai/claude-code" = "latest";
-        "npm:@mariozechner/pi-coding-agent" = "latest";
-      } // lib.optionalAttrs pkgs.stdenv.isDarwin {
-        poetry = "latest";
-        rust = "latest";
-        go = "latest";
-        node = "lts";
-        yarn = "latest";
-        k9s = "latest";
-        cargo-binstall = "latest";
-      };
-    };
   };
 
   home.sessionVariables = {

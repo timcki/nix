@@ -74,7 +74,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
             "--to"
             "@-"
           ];
-          gdiff = ["diff" "--tool" "ksdiff"];
+          gdiff = [ "diff" "--config-toml" "ui.pager='diffnav'" ];
           gresolve = ["resolve" "--tool" "ksdiff"];
           c = [ "commit" ];
           ci = [
