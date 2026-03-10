@@ -20,6 +20,7 @@ let
     qbittorrent = 8085;
     radarr = 7878;
     sonarr = 8989;
+    readarr = 8787;
     prowlarr = 9696;
   };
 
@@ -178,6 +179,12 @@ in
     group = "media";
   };
 
+  services.readarr = {
+    enable = true;
+    openFirewall = false;
+    group = "media";
+  };
+
   services.prowlarr = {
     enable = true;
     openFirewall = false;
@@ -207,8 +214,10 @@ in
     "d /media/torrents 0775 qbittorrent media -"
     "d /media/torrents/movies 0775 qbittorrent media -"
     "d /media/torrents/tv 0775 qbittorrent media -"
+    "d /media/torrents/books 0775 qbittorrent media -"
     "d /media/movies 0775 radarr media -"
     "d /media/tv 0775 sonarr media -"
+    "d /media/books 0775 readarr media -"
   ];
 
   # 6. Expose WebUIs and Jellyfin only on Tailscale
@@ -216,6 +225,7 @@ in
     webuiPorts.qbittorrent
     webuiPorts.radarr
     webuiPorts.sonarr
+    webuiPorts.readarr
     webuiPorts.prowlarr
     8096  # Jellyfin
   ];

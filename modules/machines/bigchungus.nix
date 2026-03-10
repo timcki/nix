@@ -108,6 +108,14 @@
           reverse_proxy localhost:8096
         '';
       };
+      virtualHosts."bigchungus.tailb9dbd5.ts.net:8446" = {
+        extraConfig = ''
+          tls {
+            get_certificate tailscale
+          }
+          reverse_proxy localhost:8787
+        '';
+      };
     };
 
     tailscale = {
@@ -125,7 +133,7 @@
   networking.firewall.allowedUDPPorts = [ 30303 9001 ];
 
   # Firewall: Tailscale-only ports (arr stack + Grafana)
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 3100 9443 8443 8444 8445 ];
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 3100 9443 8443 8444 8445 8446 ];
 
   system.stateVersion = "25.11";
 }
