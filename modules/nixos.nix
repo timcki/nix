@@ -20,7 +20,7 @@
   # User configuration
   users.users.tim = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    extraGroups = [ "wheel" "docker" ];
     shell = pkgs.fish;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHcfFNAGdwjYbVyiWqPU0kVaPoHZbHxypW+BInZA1gUQ"

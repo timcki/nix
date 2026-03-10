@@ -15,6 +15,29 @@
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.devNodes = "/dev/disk/by-id";
 
+  # Cap ZFS ARC to 5 GiB — preserve RAM for EL/CL clients + media stack
+  boot.kernelParams = [ "zfs.zfs_arc_max=5368709120" ];
+
+  # Swap: 16 GiB swapfile on /data for memory safety under chain sync
+  swapDevices = [{
+    device = "/data/swapfile";
+    size = 16384; # MiB
+  }];
+  boot.kernel.sysctl."vm.swappiness" = 10;
+
+  # Docker for Rocket Pool Smartnode (locally managed mode)
+  virtualisation.docker = {
+    enable = true;
+    daemon.settings = {
+      data-root = "/data/docker";
+      log-driver = "journald";
+    };
+    autoPrune = {
+      enable = true;
+      dates = "weekly";
+    };
+  };
+
   # Networking
   networking.hostName = "bigchungus";
   networking.hostId = "5914a708"; # required for ZFS
@@ -97,7 +120,12 @@
       configFile = ../../config/slurp/slurp.toml;
     };
   };
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 9443 8443 8444 8445 ];
+  # Firewall: Rocket Pool EL/CL P2P ports (public)
+  networking.firewall.allowedTCPPorts = [ 30303 9001 ];
+  networking.firewall.allowedUDPPorts = [ 30303 9001 ];
+
+  # Firewall: Tailscale-only ports (arr stack + Grafana)
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 3100 9443 8443 8444 8445 ];
 
   system.stateVersion = "25.11";
 }
