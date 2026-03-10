@@ -58,7 +58,7 @@
           tls {
             get_certificate tailscale
           }
-          reverse_proxy 10.200.0.2:9696
+          reverse_proxy localhost:9696
         '';
       };
       virtualHosts."bigchungus.tailb9dbd5.ts.net:8443" = {
@@ -66,7 +66,7 @@
           tls {
             get_certificate tailscale
           }
-          reverse_proxy 10.200.0.2:7878
+          reverse_proxy localhost:7878
         '';
       };
       virtualHosts."bigchungus.tailb9dbd5.ts.net:8444" = {

@@ -15,13 +15,17 @@ let
   vethNSAddr = "10.200.0.2/24";
   nsName = "arr-vpn";
 
-  # Ports to forward from host into the namespace
+  # Ports for services
   webuiPorts = {
     qbittorrent = 8085;
     radarr = 7878;
+    sonarr = 8989;
     prowlarr = 9696;
   };
-  allPorts = lib.attrValues webuiPorts;
+
+  # Only qBittorrent runs in the VPN namespace, so only its port needs forwarding
+  vpnPorts = [ webuiPorts.qbittorrent ];
+  allPorts = vpnPorts;
 
   # iptables rules for forwarding ports into the namespace
   # PREROUTING handles external traffic (Tailscale, LAN)
@@ -147,7 +151,7 @@ in
     '';
   };
 
-  # 3. Services running inside the VPN namespace
+  # 3. qBittorrent runs inside the VPN namespace (torrent traffic through Mullvad)
 
   services.qbittorrent = {
     enable = true;
@@ -159,33 +163,33 @@ in
   systemd.services.qbittorrent.after = [ "wg-${nsName}.service" ];
   systemd.services.qbittorrent.requires = [ "wg-${nsName}.service" ];
 
+  # 3a. Radarr, Prowlarr, FlareSolverr run on host (direct internet, no VPN)
+  #     They reach qBittorrent's WebUI at 10.200.0.2:8085 via the veth bridge
+
   services.radarr = {
     enable = true;
     openFirewall = false;
     group = "media";
   };
-  systemd.services.radarr.serviceConfig.NetworkNamespacePath = "/var/run/netns/${nsName}";
-  systemd.services.radarr.after = [ "wg-${nsName}.service" ];
-  systemd.services.radarr.requires = [ "wg-${nsName}.service" ];
+
+  services.sonarr = {
+    enable = true;
+    openFirewall = false;
+    group = "media";
+  };
 
   services.prowlarr = {
     enable = true;
     openFirewall = false;
   };
-  systemd.services.prowlarr.serviceConfig.NetworkNamespacePath = "/var/run/netns/${nsName}";
-  systemd.services.prowlarr.after = [ "wg-${nsName}.service" ];
-  systemd.services.prowlarr.requires = [ "wg-${nsName}.service" ];
 
   # FlareSolverr - Cloudflare bypass proxy for Prowlarr
-  # Runs in the same namespace so Prowlarr reaches it at http://localhost:8191
+  # Prowlarr reaches it at http://localhost:8191
   services.flaresolverr = {
     enable = true;
     port = 8191;
     openFirewall = false;
   };
-  systemd.services.flaresolverr.serviceConfig.NetworkNamespacePath = "/var/run/netns/${nsName}";
-  systemd.services.flaresolverr.after = [ "wg-${nsName}.service" ];
-  systemd.services.flaresolverr.requires = [ "wg-${nsName}.service" ];
 
   # 4. Jellyfin media server (runs on host, not in VPN namespace)
   #    VAAPI hardware acceleration via AMD 780M iGPU
@@ -202,13 +206,16 @@ in
   systemd.tmpfiles.rules = [
     "d /media/torrents 0775 qbittorrent media -"
     "d /media/torrents/movies 0775 qbittorrent media -"
+    "d /media/torrents/tv 0775 qbittorrent media -"
     "d /media/movies 0775 radarr media -"
+    "d /media/tv 0775 sonarr media -"
   ];
 
   # 6. Expose WebUIs and Jellyfin only on Tailscale
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [
     webuiPorts.qbittorrent
     webuiPorts.radarr
+    webuiPorts.sonarr
     webuiPorts.prowlarr
     8096  # Jellyfin
   ];
