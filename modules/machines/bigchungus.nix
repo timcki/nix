@@ -18,12 +18,32 @@
   # Cap ZFS ARC to 5 GiB — preserve RAM for EL/CL clients + media stack
   boot.kernelParams = [ "zfs.zfs_arc_max=5368709120" ];
 
-  # Swap: 16 GiB swapfile on /data for memory safety under chain sync
-  swapDevices = [{
-    device = "/data/swapfile";
-    size = 16384; # MiB
-  }];
-  boot.kernel.sysctl."vm.swappiness" = 10;
+  # Swap: zram only — no disk swap to avoid I/O contention with reth sync
+  # and ZFS zvol deadlocks under memory pressure
+  swapDevices = lib.mkForce [];
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
+    algorithm = "zstd";
+    priority = 100;
+  };
+
+  boot.kernel.sysctl = {
+    "vm.swappiness" = 10;
+    # Auto-reboot on kernel hangs (critical for headless/remote box)
+    "kernel.panic" = 10;
+    "kernel.panic_on_oops" = 1;
+    "kernel.hung_task_panic" = 1;
+    "kernel.hung_task_timeout_secs" = 300;
+    "kernel.softlockup_panic" = 1;
+  };
+
+  # Hardware watchdog: SP5100 TCO — force reboot if kernel/systemd hangs
+  systemd.watchdog = {
+    runtimeTime = "30s";
+    rebootTime = "2min";
+    device = "/dev/watchdog0";
+  };
 
   # Docker for Rocket Pool Smartnode (locally managed mode)
   virtualisation.docker = {
@@ -66,8 +86,10 @@
     caddy = {
       enable = true;
       package = pkgs.caddy.withPlugins {
+        # No tagged releases; pinned to latest main (bb080c4, 2026-01-06).
+        # Hash must be updated when nixpkgs bumps Caddy/Go — use the hash from the build error.
         plugins = [ "github.com/tailscale/caddy-tailscale@v0.0.0-20260106222316-bb080c4414ac" ];
-        hash = "sha256-1BAY6oZ1qJCKlh0Y2KKqw87A45EUPVtwS2Su+LfXtCc=";
+        hash = "sha256-9CYQSdGAQwd1cmFuKT2RNzeiJ4DZoyrxvsLS4JDCFCY=";
       };
       virtualHosts."http://0.0.0.0:8080" = {
         extraConfig = ''
