@@ -114,6 +114,7 @@
         remotes.origin = {
           auto-track-bookmarks = "glob:*";
         };
+        diff.git.context = 5;
         snapshot = {
           max-new-file-size = "10MiB";
         };
@@ -172,6 +173,9 @@
           "minus-emph-style" = "syntax \"#900009\"";
           "plus-style" = "syntax \"#002800\"";
           "plus-emph-style" = "syntax \"#007800\"";
+
+          # Wrap long lines instead of truncating in side-by-side mode
+          "wrap-max-lines" = "unlimited";
         };
       };
     };
