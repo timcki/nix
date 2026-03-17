@@ -114,7 +114,6 @@
         remotes.origin = {
           auto-track-bookmarks = "glob:*";
         };
-        diff.git.context = 5;
         snapshot = {
           max-new-file-size = "10MiB";
         };

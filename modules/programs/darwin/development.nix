@@ -124,6 +124,8 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
         snapshot = {
           max-new-file-size = "10MiB";
         };
+        diff.git.context = 7;
+        diff.color-words.context = 7;
         "--scope" = [
           {
             when.commands = [
