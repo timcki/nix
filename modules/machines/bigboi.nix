@@ -3,7 +3,7 @@
 {
   homebrew = {
     taps = [ "nikitabobko/tap" ];
-    casks = [ "google-cloud-sdk" ];
+    casks = [ "google-cloud-sdk" "steam" ];
     brews = [
       "graphviz"
     ];

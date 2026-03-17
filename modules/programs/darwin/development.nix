@@ -107,6 +107,10 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
             "squash"
             "--interactive"
           ];
+          sdiff = [ "diff" "--tool" "difft" ];
+          sshow = [ "show" "--tool" "difft" ];
+          slog = [ "log" "-p" "--tool" "difft" ];
+          sdiff-trunk = [ "diff" "--from" "trunk()" "--to" "@" "--tool" "difft" ];
         };
         "revset-aliases" = {
           "closest_bookmark(to)" = "heads(::to & bookmarks())";
@@ -115,6 +119,9 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
         };
         remotes.origin = {
           auto-track-bookmarks = "glob:*";
+        };
+        merge-tools.difft = {
+          diff-args = [ "--color=always" "$left" "$right" ];
         };
         merge-tools.ksdiff = {
           program = "ksdiff";

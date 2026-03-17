@@ -49,6 +49,7 @@
     jujutsu
     gh
     delta
+    difftastic
 
     # dotfiles
     chezmoi
