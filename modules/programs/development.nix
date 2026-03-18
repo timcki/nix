@@ -35,6 +35,7 @@
         ui = {
           default-command = "log";
           log-synthetic-elided-nodes = true;
+          show-cryptographic-signatures = true;
           pager = "less -RFX";
           merge-editor = ":builtin";
         };
@@ -46,7 +47,7 @@
           backend = "ssh";
           key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3zNKM+CpNS5isd8MkCbPy6qTYbPlbVeyqm3hG5FYww";
           backends.ssh.allowed-signers = "/Users/tim/.ssh/git_allowed_signers";
-          backends.ssh.program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
+          backends.ssh.program = "ssh-keygen";
         };
         aliases = {
           "log-recent" = [

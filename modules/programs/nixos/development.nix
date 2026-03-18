@@ -41,6 +41,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
         ui = {
           default-command = "log";
           log-synthetic-elided-nodes = true;
+          show-cryptographic-signatures = true;
           pager = "less -RFX";
           merge-editor = ":builtin";
         };

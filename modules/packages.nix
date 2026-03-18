@@ -33,6 +33,9 @@
     mosh
     just
 
+    # Security
+    gnupg
+
     # Additional useful tools
     dust # better du
     procs # better ps
