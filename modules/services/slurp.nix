@@ -2,7 +2,7 @@
 
 let
   cfg = config.services.slurp;
-  slurpPackage = slurp.packages.${pkgs.system}.default;
+  slurpPackage = slurp.packages.${pkgs.stdenv.hostPlatform.system}.default;
 in
 {
   options.services.slurp = {
