@@ -87,6 +87,7 @@ in
   systemd.services."wg-${nsName}" = {
     description = "WireGuard VPN in ${nsName} namespace";
     after = [ "netns-${nsName}.service" "network-online.target" ];
+    wants = [ "network-online.target" ];
     requires = [ "netns-${nsName}.service" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {

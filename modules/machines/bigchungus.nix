@@ -39,10 +39,10 @@
   };
 
   # Hardware watchdog: SP5100 TCO — force reboot if kernel/systemd hangs
-  systemd.watchdog = {
-    runtimeTime = "30s";
-    rebootTime = "2min";
-    device = "/dev/watchdog0";
+  systemd.settings.Manager = {
+    RuntimeWatchdogSec = "30s";
+    RebootWatchdogSec = "2min";
+    WatchdogDevice = "/dev/watchdog0";
   };
 
   # Docker for Rocket Pool Smartnode (locally managed mode)
