@@ -18,12 +18,10 @@ This is Tim's Nix configuration for all personal systems, managing both macOS (n
 │   │   ├── bigchungus.nix # NixOS server (x86_64-linux)
 │   │   └── bigchungus-hardware.nix
 │   └── programs/          # Program-specific configurations
-│       ├── fish.nix       # Fish shell config
+│       ├── fish.nix       # Fish shell config (shared, platform blocks inline)
 │       ├── starship.nix   # Starship prompt
-│       ├── development.nix # Dev tools setup
-│       ├── gh.nix         # GitHub CLI
-│       ├── darwin/        # macOS-only program configs
-│       └── nixos/         # NixOS-only program configs
+│       ├── development.nix # jj, git, delta (shared, platform blocks inline)
+│       └── gh.nix         # GitHub CLI
 ```
 
 ## Machines

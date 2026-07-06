@@ -5,9 +5,25 @@
   ...
 }:
 
+let
+  inherit (pkgs.stdenv.hostPlatform) isDarwin isLinux;
+  # per-machine ssh signing keys: bigboi vs server
+  signingKey =
+    if isDarwin then
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3zNKM+CpNS5isd8MkCbPy6qTYbPlbVeyqm3hG5FYww"
+    else
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICBhciZJdPz1Kq8li2Hs5JLgD4lnhlAtu+0mX65swXpN";
+in
 {
   programs = {
     zoxide.enable = true;
+
+    # linux only: darwin's ssh config is hand-managed with the strongbox agent
+    ssh = lib.mkIf isLinux {
+      enable = true;
+      enableDefaultConfig = false;
+      settings."*".AddKeysToAgent = "yes";
+    };
 
     jujutsu = {
       enable = true;
@@ -45,8 +61,8 @@
         signing = {
           behavior = "own";
           backend = "ssh";
-          key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3zNKM+CpNS5isd8MkCbPy6qTYbPlbVeyqm3hG5FYww";
-          backends.ssh.allowed-signers = "/Users/tim/.ssh/git_allowed_signers";
+          key = signingKey;
+          backends.ssh.allowed-signers = "${config.home.homeDirectory}/.ssh/git_allowed_signers";
           backends.ssh.program = "ssh-keygen";
         };
         aliases = {
@@ -110,6 +126,11 @@
           sshow = [ "show" "--tool" "difft" ];
           slog = [ "log" "-p" "--tool" "difft" ];
           sdiff-trunk = [ "diff" "--from" "trunk()" "--to" "@" "--tool" "difft" ];
+        }
+        // lib.optionalAttrs isDarwin {
+          # diffnav and ksdiff are installed outside nix on macos only
+          gdiff = [ "diff" "--config" "ui.pager='diffnav'" ];
+          gresolve = [ "resolve" "--tool" "ksdiff" ];
         };
         "revset-aliases" = {
           "closest_bookmark(to)" = "heads(::to & bookmarks())";
@@ -119,12 +140,23 @@
         remotes.origin = {
           auto-track-bookmarks = "glob:*";
         };
-        merge-tools.difft = {
-          diff-args = [ "--color=always" "$left" "$right" ];
+        merge-tools = {
+          difft = {
+            diff-args = [ "--color=always" "$left" "$right" ];
+          };
+        }
+        // lib.optionalAttrs isDarwin {
+          ksdiff = {
+            program = "ksdiff";
+            edit-args = [ "--merge" "$left" "$right" ];
+            merge-args = [ "--merge" "$left" "$right" "--base" "$base" "-o" "$output" ];
+          };
         };
         snapshot = {
           max-new-file-size = "10MiB";
         };
+        diff.git.context = 7;
+        diff.color-words.context = 7;
         "--scope" = [
           {
             when.commands = [
@@ -153,11 +185,10 @@
         user = {
           name = "Tim Chmielecki";
           email = "me@timcki.com";
-          signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3zNKM+CpNS5isd8MkCbPy6qTYbPlbVeyqm3hG5FYww";
+          signingkey = signingKey;
         };
         init.defaultBranch = "main";
         push.autoSetupRemote = true;
-        credential.helper = "osxkeychain";
         commit.gpgsign = true;
         gpg.format = "ssh";
         merge.conflictstyle = "diff3";
@@ -169,6 +200,7 @@
           light = false;
           "syntax-theme" = "base16-256";
           hyperlinks = true;
+          "wrap-max-lines" = "unlimited";
 
           # Better visual separation
           "file-style" = "bold yellow";
@@ -180,10 +212,10 @@
           "minus-emph-style" = "syntax \"#900009\"";
           "plus-style" = "syntax \"#002800\"";
           "plus-emph-style" = "syntax \"#007800\"";
-
-          # Wrap long lines instead of truncating in side-by-side mode
-          "wrap-max-lines" = "unlimited";
         };
+      }
+      // lib.optionalAttrs isDarwin {
+        credential.helper = "osxkeychain";
       };
     };
   };

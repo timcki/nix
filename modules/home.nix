@@ -10,10 +10,8 @@
     ./packages.nix
     ./programs/starship.nix
     ./programs/gh.nix
-    ./programs/darwin/fish.nix
-    ./programs/darwin/development.nix
-    ./programs/nixos/fish.nix
-    ./programs/nixos/development.nix
+    ./programs/fish.nix
+    ./programs/development.nix
   ];
 
   # Home Manager configuration
