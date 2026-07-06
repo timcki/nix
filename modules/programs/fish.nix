@@ -81,7 +81,8 @@ in
       switchd = "sudo darwin-rebuild switch --flake ~/.config/nix";
     }
     // lib.optionalAttrs isLinux {
-      switchn = "sudo nixos-rebuild switch --flake ~/.config/nix";
+      # impure: slurp is an unlocked local flake resolved via builtins.getFlake
+      switchn = "sudo nixos-rebuild switch --flake ~/.config/nix --impure";
     };
   };
 }
