@@ -8,6 +8,14 @@
 {
   nix.enable = true;
 
+  # nix-darwin master lags nixpkgs-unstable; its manual builder calls the
+  # removed --toc-depth flag, breaking darwin-manual-html. skip the offline docs.
+  documentation.enable = false;
+
+  # the uninstaller evaluates its own embedded darwin-system with docs enabled,
+  # which hits the same --toc-depth failure; drop it until nix-darwin catches up.
+  system.tools.darwin-uninstaller.enable = false;
+
   # Enable sudo with Touch ID
   security.pam.services.sudo_local.touchIdAuth = true;
 
@@ -97,6 +105,7 @@
       "ghostty"
       "codex"
       "tailscale-app"
+      "raycast"
     ];
 
     brews = [ ];
