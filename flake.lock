@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786719255,
-        "narHash": "sha256-InwvDrm9ZHvVa0RaAhmH2CRZOVBP4erVHtvwyvCXUMA=",
+        "lastModified": 1787071709,
+        "narHash": "sha256-GjFLP12crzSELknlmobxXUHnwz5NM2598Zqa4VBcp8M=",
         "ref": "refs/heads/main",
-        "rev": "2f0e99d1cb08efb7f09b9a89f03ccd528bf5b61e",
-        "revCount": 56,
+        "rev": "9a6d9413ce9fb262f5fbc06d08e6a1dfb4760471",
+        "revCount": 74,
         "type": "git",
         "url": "https://knot1.tangled.sh/did:plc:l3eogiay43j3momps2d52bol"
       },

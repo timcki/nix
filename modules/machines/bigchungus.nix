@@ -95,14 +95,42 @@
       enable = true;
       package = pkgs.caddy.withPlugins {
         # No tagged releases; pinned to latest main (bb080c4, 2026-01-06).
-        # Hash must be updated when nixpkgs bumps Caddy/Go — use the hash from the build error.
         plugins = [ "github.com/tailscale/caddy-tailscale@v0.0.0-20260106222316-bb080c4414ac" ];
-        hash = "sha256-iUQXsmUJEdOpv6uXte73RXFOhxfzwb/r9vdCTVXjP4Y=";
+        # withPlugins hashes caddy's own source together with the plugin, so the
+        # value changes on every caddy bump, and changes back when the lock
+        # rolls back. keyed by version so moving between known ones just works;
+        # for a new caddy, add the "got:" hash from the build error.
+        hash =
+          {
+            "2.11.3" = "sha256-iUQXsmUJEdOpv6uXte73RXFOhxfzwb/r9vdCTVXjP4Y=";
+            "2.11.4" = "sha256-tP/ZQjZvfb+e3322dzd3I89Y9QwujcyqV1fbNWyw08g=";
+          }
+          .${pkgs.caddy.version}
+            or (throw "caddy ${pkgs.caddy.version}: add its caddy.withPlugins hash");
       };
-      virtualHosts."http://0.0.0.0:8080" = {
+      # chungus-1 fronts tymek.me over tailscale; trusting it makes {client_ip}
+      # the real visitor instead of the proxy, which analytics needs
+      globalConfig = ''
+        servers {
+          trusted_proxies static 100.113.99.69/32
+        }
+      '';
+      virtualHosts."http://:8080" = {
         extraConfig = ''
-          root * /var/www/tymek.me/public
-          file_server
+          # first-party analytics beacon (/count and /count.js). goatcounter
+          # picks the site by Host, and the site is registered under the
+          # tailnet name where its dashboard lives, so rewrite Host here
+          handle /count* {
+            reverse_proxy 127.0.0.1:8081 {
+              header_up Host bigchungus.tailb9dbd5.ts.net
+              header_up X-Real-Ip {client_ip}
+              header_up X-Forwarded-Proto https
+            }
+          }
+          handle {
+            root * /var/www/tymek.me/public
+            file_server
+          }
         '';
       };
       # Tailscale HTTPS reverse proxies for arr stack
@@ -146,6 +174,30 @@
           reverse_proxy localhost:8787
         '';
       };
+      # goatcounter dashboard, tailnet only; the public site only ever reaches
+      # /count* through the :8080 vhost above
+      virtualHosts."bigchungus.tailb9dbd5.ts.net:8447" = {
+        extraConfig = ''
+          tls {
+            get_certificate tailscale
+          }
+          reverse_proxy localhost:8081
+        '';
+      };
+    };
+
+    goatcounter = {
+      enable = true;
+      address = "127.0.0.1";
+      port = 8081;
+      extraArgs = [
+        "-automigrate"
+        "-db"
+        "sqlite+/var/lib/goatcounter/db.sqlite3"
+        # so dashboard links and the websocket carry the non-standard port
+        "-public-port"
+        "8447"
+      ];
     };
 
     tailscale = {
@@ -160,13 +212,30 @@
 
     filmnight.enable = true;
   };
+  # cli for site creation, exports and sqlite maintenance
+  environment.systemPackages = [ pkgs.goatcounter ];
+
+  # The goatcounter module runs under DynamicUser, which makes the one-off
+  # "goatcounter db create site" runs awkward; a fixed user keeps
+  # /var/lib/goatcounter reachable for site creation and sqlite backups
+  users.users.goatcounter = {
+    isSystemUser = true;
+    group = "goatcounter";
+  };
+  users.groups.goatcounter = { };
+  systemd.services.goatcounter.serviceConfig = {
+    DynamicUser = lib.mkForce false;
+    User = "goatcounter";
+    Group = "goatcounter";
+  };
+
   # Firewall: Rocket Pool EL/CL P2P ports (public)
   networking.firewall.allowedTCPPorts = [ 30303 9001 ];
   networking.firewall.allowedUDPPorts = [ 30303 9001 ];
 
   # Firewall: Tailscale-only ports (arr stack + Grafana + film night, which
-  # chungus-1 reverse proxies for film.tymek.me)
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 3010 3100 9443 8443 8444 8445 8446 ];
+  # chungus-1 reverse proxies for film.tymek.me, + goatcounter on 8447)
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 3010 3100 9443 8443 8444 8445 8446 8447 ];
 
   system.stateVersion = "25.11";
 }
