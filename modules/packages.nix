@@ -5,11 +5,9 @@
 }:
 
 {
+  # note: fish, starship, gh, git, jujutsu, and zoxide are installed by
+  # their programs.* modules in home.nix / programs/
   home.packages = with pkgs; [
-    # Terminals and shells
-    fish
-    starship
-
     # Editors
     helix
     neovim
@@ -23,11 +21,9 @@
     eza
     fd
     fzf
-    git
     ripgrep
     tmux
     zellij
-    zoxide
     carapace
     jq
     mosh
@@ -51,8 +47,6 @@
     dbmate
 
     # Version control
-    jujutsu
-    gh
     delta
     difftastic
 
