@@ -2,10 +2,11 @@
 
 {
   homebrew = {
-    taps = [ "nikitabobko/tap" ];
-    casks = [ "google-cloud-sdk" "steam" ];
+    taps = [ "nikitabobko/tap" "schpet/tap" ];
+    casks = [ "gcloud-cli" "steam" ];
     brews = [
       "graphviz"
+      "schpet/tap/linear"
     ];
   };
 }

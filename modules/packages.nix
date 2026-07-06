@@ -59,6 +59,7 @@
 
     # Media
     ffmpeg
+    exiftool
   ] ++ lib.optionals pkgs.stdenv.isLinux [
     # On NixOS these are managed by Nix instead of mise
     nodejs
