@@ -46,6 +46,22 @@
     };
     mosh.enable = true;
     ssh.startAgent = true;
+
+    # Allow generic Linux binaries (like npm-installed CLIs from mise)
+    # to run on NixOS by providing the expected dynamic linker.
+    nix-ld = {
+      enable = true;
+      libraries = with pkgs; [
+        stdenv.cc.cc.lib
+        zlib
+        openssl
+        curl
+        icu
+        nss
+        nspr
+        expat
+      ];
+    };
   };
 
   # Networking firewall rules for mosh
