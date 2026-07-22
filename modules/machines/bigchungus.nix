@@ -5,6 +5,7 @@
     ./bigchungus-hardware.nix
     ../services/slurp.nix
     ../services/arr-stack.nix
+    ../services/samba.nix
   ];
 
   # Boot loader configuration
@@ -14,6 +15,10 @@
   # ZFS configuration
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.devNodes = "/dev/disk/by-id";
+  # Preserve the previous NixOS default for this single-host root pool.
+  # This avoids surprises after hard resets on the headless box while making
+  # the choice explicit for newer nixpkgs.
+  boot.zfs.forceImportRoot = true;
 
   # Cap ZFS ARC to 5 GiB — preserve RAM for EL/CL clients + media stack
   boot.kernelParams = [ "zfs.zfs_arc_max=5368709120" ];
@@ -30,6 +35,8 @@
 
   boot.kernel.sysctl = {
     "vm.swappiness" = 10;
+    # Disable readahead for zram swap — compressed pages have no locality
+    "vm.page-cluster" = 0;
     # Auto-reboot on kernel hangs (critical for headless/remote box)
     "kernel.panic" = 10;
     "kernel.panic_on_oops" = 1;
@@ -89,7 +96,7 @@
         # No tagged releases; pinned to latest main (bb080c4, 2026-01-06).
         # Hash must be updated when nixpkgs bumps Caddy/Go — use the hash from the build error.
         plugins = [ "github.com/tailscale/caddy-tailscale@v0.0.0-20260106222316-bb080c4414ac" ];
-        hash = "sha256-9CYQSdGAQwd1cmFuKT2RNzeiJ4DZoyrxvsLS4JDCFCY=";
+        hash = "sha256-iUQXsmUJEdOpv6uXte73RXFOhxfzwb/r9vdCTVXjP4Y=";
       };
       virtualHosts."http://0.0.0.0:8080" = {
         extraConfig = ''
