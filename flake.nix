@@ -8,7 +8,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
-      url = "github:nix-community/home-manager";
+      # Track master to stay compatible with nixpkgs-unstable.
+      url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

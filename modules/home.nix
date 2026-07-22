@@ -18,6 +18,9 @@
 
   # Home Manager configuration
   home.stateVersion = "23.05";
+  # Home Manager master is intentionally paired with nixpkgs-unstable here;
+  # disable the release-number check because unstable can move ahead first.
+  home.enableNixpkgsReleaseCheck = false;
   programs.home-manager.enable = true;
 
   # Keep mise installed and shell-integrated on macOS.

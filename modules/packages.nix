@@ -45,7 +45,9 @@
 
     # Programming languages and tools
     gopls
-    (python3.withPackages (ps: [ ps.pip ps.uv ps.pipx ]))
+    (python3.withPackages (ps: [ ps.pip ps.uv ]))
+    # Work around an upstream pipx test failure on nixpkgs-unstable/Python 3.13.
+    (python3Packages.pipx.overridePythonAttrs (_: { doCheck = false; }))
     dbmate
 
     # Version control
