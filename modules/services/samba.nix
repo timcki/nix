@@ -6,14 +6,24 @@
     enable = true;
     openFirewall = false; # We control the firewall manually (Tailscale only)
 
+    # netbios name service is broadcast, which cannot cross the tailnet, so
+    # nmbd had nothing to do but fail; wsdd below is what Infuse discovers by
+    nmbd.enable = false;
+
     settings = {
       global = {
         "server string" = "bigchungus";
         "server role" = "standalone";
 
-        # Security: Tailscale-only, user-level auth
-        "interfaces" = "tailscale0";
-        "bind interfaces only" = "yes";
+        # Security: Tailscale-only, user-level auth.
+        #
+        # Not by binding, though: samba adds an interface only if the kernel
+        # flags it broadcast or loopback, and tailscale0 is point to point.
+        # Naming it here left smbd with nothing to bind and it panicked on
+        # every start ("not adding non-broadcast interface tailscale0"), so
+        # the tailnet restriction lives in the firewall below and in
+        # hosts allow instead.
+        "bind interfaces only" = "no";
         "hosts allow" = "100.64.0.0/10 fd7a:115c:a1e0::/48";
         "hosts deny" = "0.0.0.0/0";
 
