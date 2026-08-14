@@ -111,9 +111,10 @@ in
       "d ${cfg.backupDir} 0750 filmnight filmnight -"
     ];
 
-    # handing out links is still a hand-run job:
-    #   sudo -u filmnight filmnight-seed
+    # sqlite3 for snapshots and restores by hand; handing out links is still a
+    # hand-run job: sudo -u filmnight filmnight-seed
     environment.systemPackages = [
+      pkgs.sqlite
       (pkgs.writeShellScriptBin "filmnight-seed" ''
         set -a
         . ${cfg.environmentFile}
