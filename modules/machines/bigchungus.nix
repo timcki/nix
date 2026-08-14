@@ -6,6 +6,7 @@
     ../services/slurp.nix
     ../services/arr-stack.nix
     ../services/samba.nix
+    ../services/filmnight.nix
   ];
 
   # Boot loader configuration
@@ -156,13 +157,16 @@
       enable = true;
       configFile = ../../config/slurp/slurp.toml;
     };
+
+    filmnight.enable = true;
   };
   # Firewall: Rocket Pool EL/CL P2P ports (public)
   networking.firewall.allowedTCPPorts = [ 30303 9001 ];
   networking.firewall.allowedUDPPorts = [ 30303 9001 ];
 
-  # Firewall: Tailscale-only ports (arr stack + Grafana)
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 3100 9443 8443 8444 8445 8446 ];
+  # Firewall: Tailscale-only ports (arr stack + Grafana + film night, which
+  # chungus-1 reverse proxies for film.tymek.me)
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 3010 3100 9443 8443 8444 8445 8446 ];
 
   system.stateVersion = "25.11";
 }

@@ -12,6 +12,11 @@
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    filmnight = {
+      # Public read over https, so root needs no key to evaluate this.
+      url = "git+https://knot1.tangled.sh/did:plc:l3eogiay43j3momps2d52bol";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ... }:
@@ -41,7 +46,7 @@
     mkNixosSystem = { system ? "x86_64-linux", machineModule }:
       nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit slurp; };
+        specialArgs = { inherit slurp; inherit (inputs) filmnight; };
         modules = [
           ./modules/nixos.nix
           machineModule
