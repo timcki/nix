@@ -5,7 +5,9 @@
       "WebFetch(domain:jj-vcs.github.io)",
       "WebFetch(domain:docs.jj-vcs.dev)",
       "WebFetch(domain:man.archlinux.org)",
-      "Bash(tree -L 3 /Users/tim/.config/nix -I '.git|.jj|.claude|.pi|.aider*' 2>/dev/null || find /Users/tim/.config/nix -not -path '*/\\\\.*' -type f | head -30)"
+      "Bash(tree -L 3 /Users/tim/.config/nix -I '.git|.jj|.claude|.pi|.aider*' 2>/dev/null || find /Users/tim/.config/nix -not -path '*/\\\\.*' -type f | head -30)",
+      "Bash(ssh *)",
+      "Bash(jj st *)"
     ]
   }
 }
