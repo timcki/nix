@@ -4,8 +4,7 @@ let
   # Mullvad Warsaw server
   mullvadEndpoint = "45.134.212.66:51820";
   mullvadPublicKey = "fO4beJGkKZxosCZz1qunktieuPyzPnEVKVQNhzanjnA=";
-  mullvadAddress = "10.67.105.24/32";
-  mullvadAddressV6 = "fc00:bbbb:bbbb:bb01::4:6917/128";
+  mullvadAddress = "10.74.159.124/32";
   mullvadDNS = "10.64.0.1";
 
   # veth pair for bridging WebUI ports back to host
@@ -57,12 +56,8 @@ in
   # Shared media group for arr stack services
   users.groups.media = {};
 
-  # Mullvad private key - store securely
-  # TODO: move to agenix/sops-nix for proper secret management
-  environment.etc."mullvad/wg-key" = {
-    text = "qPwJmg7F90oBYNpBRQP6M+34rIFQ5y+mP5SqszzxLWc=";
-    mode = "0600";
-  };
+  # mullvad private key, decrypted to /run/agenix at activation
+  age.secrets."mullvad-wg-key".file = ../../secrets/mullvad-wg-key.age;
 
   # 1. Create the network namespace
   systemd.services."netns-${nsName}" = {
@@ -98,7 +93,7 @@ in
     script = ''
       # Create WireGuard interface in default namespace, then move to arr-vpn
       ip link add wg-mullvad type wireguard
-      wg set wg-mullvad private-key /etc/mullvad/wg-key \
+      wg set wg-mullvad private-key ${config.age.secrets."mullvad-wg-key".path} \
         peer ${mullvadPublicKey} \
         endpoint ${mullvadEndpoint} \
         allowed-ips 0.0.0.0/0,::0/0
