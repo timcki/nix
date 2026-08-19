@@ -17,6 +17,10 @@
       url = "git+https://knot1.tangled.sh/did:plc:l3eogiay43j3momps2d52bol";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ... }:
@@ -49,6 +53,7 @@
         specialArgs = { inherit slurp; inherit (inputs) filmnight; };
         modules = [
           ./modules/nixos.nix
+          inputs.agenix.nixosModules.default
           machineModule
           home-manager.nixosModules.home-manager {
             home-manager.useGlobalPkgs = true;
