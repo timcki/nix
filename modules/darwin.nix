@@ -94,6 +94,8 @@
     };
 
     # Shared homebrew packages for all machines
+    taps = [ "ampcode/tap" ];
+
     casks = [
       "zed@preview"
       "discord"
@@ -108,6 +110,6 @@
       "raycast"
     ];
 
-    brews = [ ];
+    brews = [ "ampcode/tap/ampcode" ];
   };
 }
