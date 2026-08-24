@@ -94,7 +94,7 @@
     };
 
     # Shared homebrew packages for all machines
-    taps = [ "ampcode/tap" ];
+    taps = [ "ampcode/tap" "datadog-labs/pack" ];
 
     casks = [
       "zed@preview"
@@ -110,6 +110,6 @@
       "raycast"
     ];
 
-    brews = [ "ampcode/tap/ampcode" ];
+    brews = [ "ampcode/tap/ampcode" "datadog-labs/pack/pup" ];
   };
 }
