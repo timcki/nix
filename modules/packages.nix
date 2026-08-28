@@ -61,8 +61,18 @@
     # programs/fish.nix runs this daily on the mac, and it can be run by hand
     (writeShellScriptBin "chezmoi-sync" ''
       set -eu
-      chezmoi re-add
+      # templates and encrypted files must never be captured back from the
+      # live filesystem: re-add would flatten them to plaintext, and the
+      # repo is public on tangled
+      chezmoi re-add --exclude templates,encrypted
       cd ~/.local/share/chezmoi
+      # belt and suspenders: refuse to push if anything resembling a secret
+      # shows up outside the age blob
+      if grep -rElq "ctx7sk-|BSAU1|sk-ant-|AKIA[0-9A-Z]{16}|BEGIN.*PRIVATE KEY|ghp_[A-Za-z0-9]{30}" \
+          --exclude-dir=.git --exclude-dir=.jj --exclude="*.age" .; then
+        echo "chezmoi-sync: possible plaintext secret in source, refusing to push" >&2
+        exit 1
+      fi
       jj git fetch --remote origin
       # refuse to push over changes made elsewhere; resolve by hand instead
       if [ -n "$(jj log --no-graph -r 'main@origin ~ ::main' -T 'commit_id')" ]; then
