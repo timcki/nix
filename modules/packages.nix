@@ -56,14 +56,27 @@
     # Media
     ffmpeg
     exiftool
-  ] ++ lib.optionals pkgs.stdenv.isLinux [
-    # On NixOS these are managed by Nix instead of mise
-    nodejs
-    rustup
-    go
-    yarn
-    k9s
-    cargo-binstall
-    poetry
+
+    # capture local dotfile drift into chezmoi and push it; the fish hook in
+    # programs/fish.nix runs this daily on the mac, and it can be run by hand
+    (writeShellScriptBin "chezmoi-sync" ''
+      set -eu
+      chezmoi re-add
+      cd ~/.local/share/chezmoi
+      jj git fetch --remote origin
+      # refuse to push over changes made elsewhere; resolve by hand instead
+      if [ -n "$(jj log --no-graph -r 'main@origin ~ ::main' -T 'commit_id')" ]; then
+        echo "chezmoi-sync: origin/main has commits not in local main, resolve manually" >&2
+        exit 1
+      fi
+      if [ -z "$(jj diff --from main --to @ --summary)" ]; then
+        echo "chezmoi-sync: nothing to sync"
+        exit 0
+      fi
+      jj describe -m "auto-sync from $(hostname -s)"
+      jj bookmark move main --to @
+      jj git push --remote origin --bookmark main
+      jj new
+    '')
   ];
 }

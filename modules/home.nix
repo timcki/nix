@@ -21,12 +21,33 @@
   home.enableNixpkgsReleaseCheck = false;
   programs.home-manager.enable = true;
 
-  # Keep mise installed and shell-integrated on macOS.
-  # Tool versions are managed outside Nix (e.g. via chezmoi-managed
-  # ~/.config/mise/config.toml), so tools can be changed without rebuilds.
-  programs.mise = lib.mkIf pkgs.stdenv.isDarwin {
+  # mise owns fast-moving toolchains on both platforms; versions live in the
+  # chezmoi-managed ~/.config/mise/config.toml so bumps need no nix rebuild
+  programs.mise = {
     enable = true;
     enableFishIntegration = true;
+  };
+
+  # bigchungus is the consume side of dotfiles: pull and apply on a timer so
+  # it can never drift behind. the mac captures and pushes via chezmoi-sync.
+  systemd.user = lib.mkIf pkgs.stdenv.isLinux {
+    services.chezmoi-update = {
+      Unit.Description = "pull and apply dotfiles";
+      Service = {
+        Type = "oneshot";
+        Environment = "PATH=${lib.makeBinPath [ pkgs.git pkgs.openssh ]}";
+        ExecStart = "${pkgs.chezmoi}/bin/chezmoi update";
+      };
+    };
+    timers.chezmoi-update = {
+      Unit.Description = "periodic chezmoi update";
+      Timer = {
+        OnCalendar = "hourly";
+        Persistent = true;
+        RandomizedDelaySec = "5m";
+      };
+      Install.WantedBy = [ "timers.target" ];
+    };
   };
 
   home.sessionVariables = {

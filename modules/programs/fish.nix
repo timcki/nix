@@ -33,6 +33,18 @@ in
         if command -v fish_ssh_agent >/dev/null 2>&1
             fish_ssh_agent
         end
+
+        # capture dotfile drift into chezmoi at most once a day; runs from the
+        # interactive session so the ssh agent is available for the push
+        if status is-interactive; and command -v chezmoi-sync >/dev/null 2>&1
+            set -l stamp ~/.local/state/chezmoi-sync/last-run
+            if not test -f $stamp; or test (math (date +%s) - (stat -f %m $stamp)) -gt 86400
+                mkdir -p ~/.local/state/chezmoi-sync
+                touch $stamp
+                chezmoi-sync >~/.local/state/chezmoi-sync/log 2>&1 &
+                disown
+            end
+        end
       ''
       + lib.optionalString isLinux ''
         # No auto-start zellij on NixOS (prevents nested sessions when SSH from mac)

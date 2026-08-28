@@ -74,6 +74,19 @@
   # Time zone
   time.timeZone = "Europe/Amsterdam";
 
+  # follow the nix config repo on github so this box converges on its own;
+  # push to main and it picks the change up here at night (or run switchn)
+  system.autoUpgrade = {
+    enable = true;
+    flake = "github:timcki/nix";
+    # impure: slurp is an unlocked local flake resolved via builtins.getFlake
+    flags = [ "--impure" "--refresh" ];
+    dates = "04:30";
+    randomizedDelaySec = "10min";
+    # never reboot on its own; this box runs a staking node
+    allowReboot = false;
+  };
+
   # Services
   services = {
     # ZFS maintenance
