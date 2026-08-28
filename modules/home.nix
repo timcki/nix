@@ -36,7 +36,9 @@
       Service = {
         Type = "oneshot";
         Environment = "PATH=${lib.makeBinPath [ pkgs.git pkgs.openssh ]}";
-        ExecStart = "${pkgs.chezmoi}/bin/chezmoi update";
+        # force: no TTY here, and the mac is the source of truth for dotfiles;
+        # local edits on this box are expected to lose
+        ExecStart = "${pkgs.chezmoi}/bin/chezmoi update --force";
       };
     };
     timers.chezmoi-update = {
