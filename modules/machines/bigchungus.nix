@@ -74,11 +74,13 @@
   # Time zone
   time.timeZone = "Europe/Amsterdam";
 
-  # follow the nix config repo on github so this box converges on its own;
-  # push to main and it picks the change up here at night (or run switchn)
+  # follow the nix config repo on tangled so this box converges on its own;
+  # push to main and it picks the change up here at night (or run switchn).
+  # public read over https, so root needs no key; tangled.org redirects to
+  # the knot url, which git follows
   system.autoUpgrade = {
     enable = true;
-    flake = "github:timcki/nix";
+    flake = "git+https://tangled.org/tymek.me/nix";
     # impure: slurp is an unlocked local flake resolved via builtins.getFlake
     flags = [ "--impure" "--refresh" ];
     dates = "04:30";
