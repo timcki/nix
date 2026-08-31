@@ -81,7 +81,7 @@
   system.autoUpgrade = {
     enable = true;
     flake = "git+https://tangled.org/tymek.me/nix";
-    flags = [ "--refresh" ];
+    # no flags: the module already passes --refresh and --flake itself
     dates = "04:30";
     randomizedDelaySec = "10min";
     # never reboot on its own; this box runs a staking node
