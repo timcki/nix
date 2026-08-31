@@ -81,8 +81,7 @@
   system.autoUpgrade = {
     enable = true;
     flake = "git+https://tangled.org/tymek.me/nix";
-    # impure: slurp is an unlocked local flake resolved via builtins.getFlake
-    flags = [ "--impure" "--refresh" ];
+    flags = [ "--refresh" ];
     dates = "04:30";
     randomizedDelaySec = "10min";
     # never reboot on its own; this box runs a staking node

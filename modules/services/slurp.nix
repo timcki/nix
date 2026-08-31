@@ -9,7 +9,6 @@ in
     enable = lib.mkEnableOption "Slurp RSS reader";
     configFile = lib.mkOption {
       type = lib.types.path;
-      default = /home/tim/slurp/slurp.toml;
       description = "Path to slurp config file";
     };
   };

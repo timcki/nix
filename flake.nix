@@ -17,6 +17,11 @@
       url = "git+https://knot1.tangled.sh/did:plc:l3eogiay43j3momps2d52bol";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    slurp = {
+      # Public read over https, so root needs no key to evaluate this.
+      url = "git+https://knot1.tangled.sh/did:plc:lvc6qlu5xd6poflokxox6pxv";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -43,14 +48,10 @@
       };
 
     # Helper function to create a nixos system configuration
-    # slurp is fetched locally on the NixOS server where the repo exists,
-    # rather than as a flake input, so macOS machines don't need it.
-    slurp = builtins.getFlake "git+file:///home/tim/slurp";
-
     mkNixosSystem = { system ? "x86_64-linux", machineModule }:
       nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit slurp; inherit (inputs) filmnight; };
+        specialArgs = { inherit (inputs) slurp filmnight; };
         modules = [
           ./modules/nixos.nix
           inputs.agenix.nixosModules.default

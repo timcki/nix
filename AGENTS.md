@@ -49,7 +49,7 @@ darwin-rebuild switch --flake .#bigboi
 darwin-rebuild switch --flake .#small
 
 # Rebuild NixOS system
-sudo nixos-rebuild switch --flake .#bigchungus --impure  # impure: local slurp flake via getFlake
+sudo nixos-rebuild switch --flake .#bigchungus
 
 # Update flake inputs
 nix flake update
