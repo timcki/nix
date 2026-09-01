@@ -25,8 +25,11 @@ in
             source ~/.secrets
         end
 
-        # auto-attach to zellij (skip in Zed terminal)
-        if test "$ZED_TERM" != "true"; and not set -q ZELLIJ; and command -v zellij >/dev/null 2>&1
+        # auto-attach to zellij only from a real terminal emulator (skip Zed).
+        # OrbStack probes the login shell at startup without TERM_PROGRAM; without
+        # this guard that probe creates the session with cwd / and macOS charges
+        # every pane's energy use to OrbStack
+        if set -q TERM_PROGRAM; and test "$ZED_TERM" != "true"; and not set -q ZELLIJ; and command -v zellij >/dev/null 2>&1
             zellij attach -c work
         end
 
