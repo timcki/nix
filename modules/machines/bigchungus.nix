@@ -1,5 +1,25 @@
 { config, lib, pkgs, slurp, ... }:
 
+let
+  ampRunnerPackages = with pkgs; [
+    amp-cli
+    bashInteractive
+    corepack
+    fd
+    git
+    gnumake
+    google-cloud-sdk
+    jq
+    jujutsu
+    nodejs_24
+    openssh
+    pkg-config
+    pnpm
+    python3
+    ripgrep
+    stdenv.cc
+  ];
+in
 {
   imports = [
     ./bigchungus-hardware.nix
@@ -228,6 +248,56 @@
   };
   # cli for site creation, exports and sqlite maintenance
   environment.systemPackages = [ pkgs.goatcounter ];
+
+  # isolate the remotely controlled runner from personal files and host
+  # administration. project credentials live only in this user's home.
+  users.groups.amp = { };
+  users.users.amp = {
+    isNormalUser = true;
+    description = "Amp remote runner";
+    home = "/home/amp";
+    createHome = true;
+    homeMode = "0700";
+    group = "amp";
+    shell = pkgs.bashInteractive;
+    packages = ampRunnerPackages;
+  };
+
+  systemd.services.amp-runner-exchange = {
+    description = "Amp runner for exchange-service-2";
+    wantedBy = [ "multi-user.target" ];
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+    unitConfig.ConditionPathIsDirectory = "/home/amp/Repos/tokentax/exchange-service-2/.jj";
+    path = ampRunnerPackages;
+    environment = {
+      HOME = "/home/amp";
+      XDG_CONFIG_HOME = "/home/amp/.config";
+      AMP_SKIP_UPDATE_CHECK = "1";
+    };
+    serviceConfig = {
+      User = "amp";
+      Group = "amp";
+      WorkingDirectory = "/home/amp/Repos/tokentax/exchange-service-2";
+      ExecStart = "${pkgs.amp-cli}/bin/amp --no-tui --runner-id bigchungus-exchange --remote-control-terminal";
+      Restart = "always";
+      RestartSec = "5s";
+      UMask = "0077";
+      Nice = 10;
+      CPUWeight = 20;
+      IOWeight = 20;
+      MemoryHigh = "6G";
+      MemoryMax = "8G";
+      OOMScoreAdjust = 500;
+      NoNewPrivileges = true;
+      PrivateDevices = true;
+      ProtectSystem = "full";
+      ProtectKernelTunables = true;
+      ProtectKernelModules = true;
+      ProtectControlGroups = true;
+      RestrictSUIDSGID = true;
+    };
+  };
 
   # The goatcounter module runs under DynamicUser, which makes the one-off
   # "goatcounter db create site" runs awkward; a fixed user keeps
