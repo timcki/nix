@@ -101,6 +101,13 @@ nix flake check
 nix flake update
 ```
 
+### Remote Amp runner
+
+Use `amp-stage <name> [revision]` from an exchange-service-2 jj workspace to
+transfer that exact revision and its ancestor stack to a new isolated runner on
+bigchungus. See [docs/amp-runner.md](docs/amp-runner.md) for the workflow and
+server environment.
+
 ## Secrets
 
 Encrypted with agenix; recipients are tim's SSH key and the bigchungus host key

@@ -53,6 +53,54 @@
     # dotfiles
     chezmoi
 
+    # send an exact local jj revision to an isolated Amp runner on bigchungus
+    (writeShellApplication {
+      name = "amp-stage";
+      runtimeInputs = [ coreutils gawk git jujutsu openssh ];
+      text = ''
+        set -euo pipefail
+
+        if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+          echo "usage: amp-stage <name> [revision]" >&2
+          exit 2
+        fi
+
+        name="$1"
+        revision="''${2:-@}"
+
+        if ! [[ "$name" =~ ^[a-z0-9][a-z0-9-]{0,31}$ ]]; then
+          echo "amp-stage: name must match [a-z0-9][a-z0-9-]{0,31}" >&2
+          exit 2
+        fi
+
+        root="$(jj root)"
+        origin="$(jj -R "$root" git remote list | awk '$1 == "origin" { print $2 }')"
+        case "$origin" in
+          git@github.com:TokenTax/exchange-service-2.git|ssh://git@github.com/TokenTax/exchange-service-2.git|https://github.com/TokenTax/exchange-service-2.git)
+            ;;
+          *)
+            echo "amp-stage: only exchange-service-2 is supported, found origin: $origin" >&2
+            exit 1
+            ;;
+        esac
+
+        # jj snapshots the working copy before resolving the selected revision.
+        commit="$(jj -R "$root" log --no-graph -r "$revision" -T 'commit_id ++ "\n"')"
+        if [[ ! "$commit" =~ ^[0-9a-f]{40}$ ]]; then
+          echo "amp-stage: revision must resolve to exactly one Git commit" >&2
+          exit 1
+        fi
+
+        echo "sending $revision ($commit) to bigchungus"
+        git -C "$root" push \
+          ssh://amp@bigchungus/home/amp/Sync/exchange-service-2.git \
+          "$commit:refs/heads/snapshots/$commit"
+
+        # shellcheck disable=SC2029
+        ssh bigchungus sudo amp-stage-server "$name" "$commit"
+      '';
+    })
+
     # Media
     ffmpeg
     exiftool

@@ -1,24 +1,112 @@
 { config, lib, pkgs, slurp, ... }:
 
 let
+  linearCli = pkgs.stdenvNoCC.mkDerivation {
+    pname = "linear-cli";
+    version = "2.6.0";
+    src = pkgs.fetchurl {
+      url = "https://github.com/schpet/linear-cli/releases/download/v2.6.0/linear-x86_64-unknown-linux-gnu.tar.xz";
+      hash = "sha256-u8udNlMIvDcooeyZE60YgPiMDOaHZzgyl+NIwFfzW40=";
+    };
+    dontPatchELF = true;
+    dontStrip = true;
+    installPhase = ''
+      runHook preInstall
+      install -Dm755 linear $out/libexec/linear
+      mkdir -p $out/bin
+      cat > $out/bin/linear <<EOF
+      #!${pkgs.runtimeShell}
+      export NIX_LD=${pkgs.stdenv.cc.bintools.dynamicLinker}
+      export NIX_LD_LIBRARY_PATH=${lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ]}
+      exec $out/libexec/linear "\$@"
+      EOF
+      chmod 0755 $out/bin/linear
+      runHook postInstall
+    '';
+    meta = {
+      description = "CLI for Linear with Git and Jujutsu integration";
+      homepage = "https://github.com/schpet/linear-cli";
+      license = lib.licenses.mit;
+      mainProgram = "linear";
+      platforms = [ "x86_64-linux" ];
+    };
+  };
+
   ampRunnerPackages = with pkgs; [
     amp-cli
     bashInteractive
     corepack
+    datadog-pup
     fd
     git
+    gh
     gnumake
     google-cloud-sdk
     jq
     jujutsu
+    linearCli
     nodejs_24
     openssh
     pkg-config
     pnpm
     python3
+    railway
     ripgrep
     stdenv.cc
   ];
+
+  ampStageServer = pkgs.writeShellApplication {
+    name = "amp-stage-server";
+    runtimeInputs = with pkgs; [ coreutils git jujutsu systemd util-linux ];
+    text = ''
+      set -euo pipefail
+
+      if [ "$(id -u)" -ne 0 ]; then
+        echo "amp-stage-server: must run as root" >&2
+        exit 1
+      fi
+      if [ "$#" -ne 2 ]; then
+        echo "usage: amp-stage-server <name> <commit>" >&2
+        exit 2
+      fi
+
+      name="$1"
+      commit="$2"
+      if ! [[ "$name" =~ ^[a-z0-9][a-z0-9-]{0,31}$ ]]; then
+        echo "amp-stage-server: invalid name" >&2
+        exit 2
+      fi
+      if ! [[ "$commit" =~ ^[0-9a-f]{40}$ ]]; then
+        echo "amp-stage-server: invalid commit" >&2
+        exit 2
+      fi
+
+      bare=/home/amp/Sync/exchange-service-2.git
+      source=/home/amp/Repos/tokentax/exchange-service-2
+      workspace_id="$name-''${commit:0:12}"
+      workspace_root="/home/amp/Workspaces/$workspace_id"
+      workspace="$workspace_root/exchange-service-2"
+
+      if ! runuser -u amp -- git --git-dir="$bare" cat-file -e "$commit^{commit}"; then
+        echo "amp-stage-server: commit was not received by the sync repository" >&2
+        exit 1
+      fi
+
+      if [ ! -e "$workspace/.jj" ]; then
+        install -d -o amp -g amp -m 0700 "$workspace_root"
+        runuser -u amp -- git -C "$source" fetch --no-write-fetch-head "$bare" \
+          "refs/heads/snapshots/$commit:refs/heads/amp-stage/$commit"
+        runuser -u amp -- jj -R "$source" --ignore-working-copy workspace add \
+          --name "amp-$workspace_id" --revision "$commit" "$workspace"
+        runuser -u amp -- ln -s /home/amp/Repos/tokentax/token-compose "$workspace_root/token-compose"
+      fi
+
+      systemctl start "amp-runner-exchange@$workspace_id.service"
+      echo "runner: bigchungus-x-$workspace_id"
+      echo "path:   $workspace"
+      echo "next:   select that runner when creating the Amp thread"
+    '';
+  };
 in
 {
   imports = [
@@ -247,7 +335,24 @@ in
     filmnight.enable = true;
   };
   # cli for site creation, exports and sqlite maintenance
-  environment.systemPackages = [ pkgs.goatcounter ];
+  environment.systemPackages = [ pkgs.goatcounter ampStageServer ];
+
+  environment.etc."amp-runner/AGENTS.md".text = ''
+    # bigchungus Amp runners
+
+    This session runs as the isolated `amp` user on bigchungus.
+
+    - The working directory is a dedicated jj workspace created by `amp-stage`.
+    - The selected local revision and its complete ancestor stack retain their
+      original commit and change IDs.
+    - Run `corepack pnpm install --frozen-lockfile` when `node_modules` is absent.
+      All workspaces share the amp user's pnpm content store.
+    - `../token-compose` links to the persistent checkout containing
+      `.env.compose`; `pnpm cli-sync` loads it automatically.
+    - Do not edit another workspace under `/home/amp/Workspaces` or the legacy
+      checkout under `/home/amp/Repos/tokentax/exchange-service-2`.
+    - The runner and workspace persist across client disconnects and reboots.
+  '';
 
   # isolate the remotely controlled runner from personal files and host
   # administration. project credentials live only in this user's home.
@@ -261,6 +366,54 @@ in
     group = "amp";
     shell = pkgs.bashInteractive;
     packages = ampRunnerPackages;
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDI2dfsVzngdYLmJ3T0StS3eI3IzLMlAi7XOfqt1uVBe tim@macbook-pro"
+    ];
+  };
+
+  systemd.services.amp-stage-init = {
+    description = "Initialize Amp revision staging";
+    wantedBy = [ "multi-user.target" ];
+    before = [ "amp-runner-exchange.service" ];
+    path = [ pkgs.coreutils pkgs.git ];
+    serviceConfig = {
+      Type = "oneshot";
+      User = "amp";
+      Group = "amp";
+      UMask = "0077";
+    };
+    script = ''
+      mkdir -p /home/amp/Sync /home/amp/Workspaces /home/amp/.config/amp
+      if [ ! -d /home/amp/Sync/exchange-service-2.git ]; then
+        git init --bare /home/amp/Sync/exchange-service-2.git
+      fi
+      ln -sfn /etc/amp-runner/AGENTS.md /home/amp/.config/amp/AGENTS.md
+    '';
+  };
+
+  systemd.services.amp-stage-resume = {
+    description = "Resume staged Amp runners";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "amp-stage-init.service" ];
+    requires = [ "amp-stage-init.service" ];
+    path = [ pkgs.coreutils pkgs.systemd ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      for workspace in /home/amp/Workspaces/*/exchange-service-2/.jj; do
+        if [ ! -e "$workspace" ]; then
+          continue
+        fi
+        instance="$(basename "$(dirname "$(dirname "$workspace")")")"
+        systemctl start "amp-runner-exchange@$instance.service"
+      done
+    '';
+  };
+
+  systemd.slices.amp-runners.sliceConfig = {
+    CPUWeight = 20;
+    IOWeight = 20;
+    MemoryHigh = "8G";
+    MemoryMax = "10G";
   };
 
   systemd.services.amp-runner-exchange = {
@@ -289,6 +442,42 @@ in
       MemoryHigh = "6G";
       MemoryMax = "8G";
       OOMScoreAdjust = 500;
+      NoNewPrivileges = true;
+      PrivateDevices = true;
+      ProtectSystem = "full";
+      ProtectKernelTunables = true;
+      ProtectKernelModules = true;
+      ProtectControlGroups = true;
+      RestrictSUIDSGID = true;
+    };
+  };
+
+  systemd.services."amp-runner-exchange@" = {
+    description = "Amp runner for staged exchange-service-2 revision %i";
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" "amp-stage-init.service" ];
+    unitConfig.ConditionPathIsDirectory = "/home/amp/Workspaces/%i/exchange-service-2/.jj";
+    path = ampRunnerPackages;
+    environment = {
+      HOME = "/home/amp";
+      XDG_CONFIG_HOME = "/home/amp/.config";
+      AMP_SKIP_UPDATE_CHECK = "1";
+    };
+    serviceConfig = {
+      User = "amp";
+      Group = "amp";
+      WorkingDirectory = "/home/amp/Workspaces/%i/exchange-service-2";
+      ExecStart = "${pkgs.amp-cli}/bin/amp --no-tui --runner-id bigchungus-x-%i --remote-control-terminal";
+      Restart = "always";
+      RestartSec = "5s";
+      UMask = "0077";
+      Nice = 10;
+      CPUWeight = 20;
+      IOWeight = 20;
+      MemoryHigh = "6G";
+      MemoryMax = "8G";
+      OOMScoreAdjust = 500;
+      Slice = "amp-runners.slice";
       NoNewPrivileges = true;
       PrivateDevices = true;
       ProtectSystem = "full";
