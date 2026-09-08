@@ -107,6 +107,10 @@ let
       echo "next:   select that runner when creating the Amp thread"
     '';
   };
+
+  # identifies a caddy.withPlugins build: the fixed-output hash covers caddy's
+  # source, the plugin and the go toolchain, so both halves belong in the key.
+  caddyPluginKey = "${pkgs.caddy.version}-go${pkgs.caddy.passthru.go.version}";
 in
 {
   imports = [
@@ -218,17 +222,18 @@ in
       package = pkgs.caddy.withPlugins {
         # No tagged releases; pinned to latest main (bb080c4, 2026-01-06).
         plugins = [ "github.com/tailscale/caddy-tailscale@v0.0.0-20260106222316-bb080c4414ac" ];
-        # withPlugins hashes caddy's own source together with the plugin, so the
-        # value changes on every caddy bump, and changes back when the lock
-        # rolls back. keyed by version so moving between known ones just works;
-        # for a new caddy, add the "got:" hash from the build error.
+        # withPlugins hashes caddy's source, the plugin and the go toolchain
+        # together, so it moves when nixpkgs bumps caddy *or* go: 2.11.4 alone
+        # has two hashes. keyed by both so rolling the lock back still resolves;
+        # for a new pair, add the "got:" hash from the build error.
         hash =
           {
-            "2.11.3" = "sha256-iUQXsmUJEdOpv6uXte73RXFOhxfzwb/r9vdCTVXjP4Y=";
-            "2.11.4" = "sha256-tP/ZQjZvfb+e3322dzd3I89Y9QwujcyqV1fbNWyw08g=";
+            "2.11.3-go1.26.3" = "sha256-iUQXsmUJEdOpv6uXte73RXFOhxfzwb/r9vdCTVXjP4Y=";
+            "2.11.4-go1.26.5" = "sha256-tP/ZQjZvfb+e3322dzd3I89Y9QwujcyqV1fbNWyw08g=";
+            "2.11.4-go1.26.7" = "sha256-o0oG/9hROjDl69AeuxUhhFVTsdluHJ8VyENVk1KHCOI=";
           }
-          .${pkgs.caddy.version}
-            or (throw "caddy ${pkgs.caddy.version}: add its caddy.withPlugins hash");
+          .${caddyPluginKey}
+            or (throw "caddy ${caddyPluginKey}: add its caddy.withPlugins hash");
       };
       # chungus-1 fronts tymek.me over tailscale; trusting it makes {client_ip}
       # the real visitor instead of the proxy, which analytics needs
