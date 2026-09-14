@@ -51,7 +51,7 @@
     mkNixosSystem = { system ? "x86_64-linux", machineModule }:
       nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit (inputs) slurp filmnight; };
+        specialArgs = { inherit self; inherit (inputs) slurp filmnight; };
         modules = [
           ./modules/nixos.nix
           inputs.agenix.nixosModules.default

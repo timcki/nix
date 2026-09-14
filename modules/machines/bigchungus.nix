@@ -1,6 +1,37 @@
 { config, lib, pkgs, slurp, ... }:
 
 let
+  # One definition for the nightly upgrade and for switchn. They used to be two:
+  # switchn built ~/.config/nix while the upgrade built what was pushed, so a
+  # `nix flake update` that never left the working copy was a deploy with a
+  # twelve-hour life, and film night ran a fortnight-old commit while the lock
+  # on disk insisted otherwise.
+  configFlake = "git+https://tangled.org/tymek.me/nix";
+
+  # Film night is deliberately not pinned here: it follows its own main. What
+  # makes that safe is that its build runs its own acceptance suite and type
+  # check (doCheck in its nix/package.nix), so a revision that fails either
+  # produces no store path and cannot become the running system. A red main is
+  # a deploy that does not happen, which this box then reports.
+  deployFlags = [
+    "--override-input"
+    "filmnight"
+    "git+https://knot1.tangled.sh/did:plc:l3eogiay43j3momps2d52bol"
+  ];
+
+  # a script rather than a shell alias, so there is nowhere for the two to drift
+  switchn = pkgs.writeShellScriptBin "switchn" ''
+    exec sudo nixos-rebuild switch --flake ${configFlake} \
+      ${lib.escapeShellArgs deployFlags} --refresh "$@"
+  '';
+
+  switchnLocal = pkgs.writeShellScriptBin "switchn-local" ''
+    echo "building the working copy, not ${configFlake}." >&2
+    echo "04:30 builds what is pushed, so anything unpushed goes then." >&2
+    exec sudo nixos-rebuild switch --flake "$HOME/.config/nix" \
+      ${lib.escapeShellArgs deployFlags} "$@"
+  '';
+
   linearCli = pkgs.stdenvNoCC.mkDerivation {
     pname = "linear-cli";
     version = "2.6.0";
@@ -119,6 +150,7 @@ in
     ../services/arr-stack.nix
     ../services/samba.nix
     ../services/filmnight.nix
+    ../services/unit-failure.nix
   ];
 
   # Boot loader configuration
@@ -192,8 +224,10 @@ in
   # the knot url, which git follows
   system.autoUpgrade = {
     enable = true;
-    flake = "git+https://tangled.org/tymek.me/nix";
-    # no flags: the module already passes --refresh and --flake itself
+    flake = configFlake;
+    # the module already passes --refresh and --flake itself; these are the
+    # only flags, and switchn passes the same ones
+    flags = deployFlags;
     dates = "04:30";
     randomizedDelaySec = "10min";
     # never reboot on its own; this box runs a staking node
@@ -343,7 +377,7 @@ in
     };
   };
   # cli for site creation, exports and sqlite maintenance
-  environment.systemPackages = [ pkgs.goatcounter ampStageServer ];
+  environment.systemPackages = [ pkgs.goatcounter ampStageServer switchn switchnLocal ];
 
   environment.etc."amp-runner/AGENTS.md".text = ''
     # bigchungus Amp runners

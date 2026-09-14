@@ -85,14 +85,41 @@ the server**. `allowReboot = false` because the box runs a staking node; kernel
 changes need a manual reboot. Don't set `autoUpgrade.flags` for `--refresh` or
 `--flake`; the NixOS module already passes both.
 
+`flags` does carry `--override-input filmnight`, and `switchn` on bigchungus
+passes the same list from the same `let` binding in
+`modules/machines/bigchungus.nix`. Keep it that way. They were two things once:
+`switchn` built `~/.config/nix` while the upgrade built what was pushed, so a
+`nix flake update filmnight` that stayed in the working copy deployed until
+04:30 and then silently reverted, and film night served a fortnight-old commit.
+Anything that makes the two invocations differ again brings that back.
+
+Film night is therefore not pinned in `flake.lock`; it follows its own `main`,
+gated by its own build, which runs its acceptance suite and type check. To pin
+it deliberately for a rollback, drop the flag and bump the lock as usual.
+
+## Failures
+
+Units that matter carry `onFailure = [ "unit-failure@%n.service" ]`.
+`modules/services/unit-failure.nix` is the only place that knows how a failure
+is delivered: it records one to a spool and the fish greeting prints anything
+outstanding at login. Add a push notification there and nowhere else.
+`unit-failures` reports, `unit-failures --clear` empties the spool.
+
+`system.configurationRevision` is `self.rev`, or `"dirty"` when the system came
+from a working copy, which is what `nixos-version --configuration-revision`
+reports and what the login greeting warns about.
+
 ## Usage
 
 ```bash
 # rebuild macOS (abbreviation: switchd)
 sudo darwin-rebuild switch --flake ~/.config/nix
 
-# rebuild NixOS (abbreviation: switchn)
-sudo nixos-rebuild switch --flake ~/.config/nix
+# rebuild NixOS, on bigchungus: builds the pushed config, same flags as 04:30
+switchn
+
+# the same, from the working copy; reverted at 04:30, and it says so
+switchn-local
 
 # validate before committing
 nix flake check

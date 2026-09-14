@@ -2,10 +2,17 @@
   config,
   pkgs,
   lib,
+  self,
   ...
 }:
 
 {
+  # what `nixos-version --configuration-revision` answers. "dirty" is the case
+  # worth having: it means this system came from a working copy rather than
+  # from what is pushed, so the nightly upgrade will replace it with something
+  # else, and the login greeting says so
+  system.configurationRevision = self.rev or self.dirtyRev or "dirty";
+
   # Nix configuration
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 

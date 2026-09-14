@@ -51,6 +51,12 @@ in
       ''
       + lib.optionalString isLinux ''
         # No auto-start zellij on NixOS (prevents nested sessions when SSH from mac)
+
+        # a unit that failed, or a system built from an unpushed working copy,
+        # said once at login. prints nothing when there is nothing to say
+        if status is-interactive; and command -v unit-failures >/dev/null 2>&1
+            unit-failures --login
+        end
       '';
 
     shellAliases = {
@@ -75,9 +81,9 @@ in
     }
     // lib.optionalAttrs isDarwin {
       switchd = "sudo darwin-rebuild switch --flake ~/.config/nix";
-    }
-    // lib.optionalAttrs isLinux {
-      switchn = "sudo nixos-rebuild switch --flake ~/.config/nix";
     };
+    # switchn is not here: on bigchungus it is a script the machine module
+    # installs, sharing one definition with the nightly upgrade so that what it
+    # builds and what converges at 04:30 cannot be two different things
   };
 }
