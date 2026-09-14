@@ -57,6 +57,7 @@ in
       systemd.services.filmnight = {
         description = "Film Night";
         documentation = [ "https://film.tymek.me" ];
+        onFailure = [ "unit-failure@%n.service" ];
         wantedBy = [ "multi-user.target" ];
         after = [ "network-online.target" ];
         wants = [ "network-online.target" ];
@@ -71,6 +72,11 @@ in
           # seeds /admin access at boot; grants only, so revoking in the UI
           # sticks and a rebuild can never hand the flag back
           ADMINS = "tymek-chmielecki,piotr-cenda";
+
+          # the commit this store path was built from, handed on so /healthz can
+          # answer what is running without anybody grepping the store. rev is
+          # absent only when the input is a dirty working copy
+          FILMNIGHT_REV = filmnight.rev or "dirty";
         };
 
         serviceConfig = {
@@ -101,6 +107,7 @@ in
       # sqlite3 .backup is safe against a live WAL writer, so this needs no stop
       systemd.services.filmnight-backup = {
         description = "Film Night nightly database backup";
+        onFailure = [ "unit-failure@%n.service" ];
 
         serviceConfig = {
           Type = "oneshot";
@@ -162,6 +169,7 @@ in
       systemd.services.filmnight-demo = {
         description = "Film Night demo";
         documentation = [ "https://demo.film.tymek.me" ];
+        onFailure = [ "unit-failure@%n.service" ];
         wantedBy = [ "multi-user.target" ];
         after = [ "network-online.target" ];
         wants = [ "network-online.target" ];
@@ -177,6 +185,11 @@ in
           # X-Forwarded-For itself and is the only hop in front, hence depth 1
           ADDRESS_HEADER = "X-Forwarded-For";
           XFF_DEPTH = "1";
+
+          # the commit this store path was built from, handed on so /healthz can
+          # answer what is running without anybody grepping the store. rev is
+          # absent only when the input is a dirty working copy
+          FILMNIGHT_REV = filmnight.rev or "dirty";
         };
 
         serviceConfig = {
@@ -212,6 +225,8 @@ in
       # fine, a leaking one is not
       systemd.services.filmnight-demo-refresh = {
         description = "Rebuild the Film Night demo database";
+        # a stale demo is fine and a silently stale one is not; see unit-failure.nix
+        onFailure = [ "unit-failure@%n.service" ];
 
         serviceConfig = {
           Type = "oneshot";
