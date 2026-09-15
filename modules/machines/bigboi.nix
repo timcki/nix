@@ -2,11 +2,8 @@
 
 {
   homebrew = {
-    taps = [ "nikitabobko/tap" "schpet/tap" ];
+    taps = [ "nikitabobko/tap" ];
     casks = [ "gcloud-cli" "steam" ];
-    brews = [
-      "graphviz"
-      "schpet/tap/linear"
-    ];
+    brews = [ "graphviz" ]; # linear moved to mise
   };
 }

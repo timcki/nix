@@ -94,22 +94,19 @@
     };
 
     # Shared homebrew packages for all machines
-    taps = [ "ampcode/tap" "datadog-labs/pack" ];
+    taps = [ "ampcode/tap" ];
 
     casks = [
       "zed@preview"
       "discord"
-      "vimr"
-      "1password@nightly"
-      "1password-cli@beta"
-      "jordanbaird-ice"
       "rectangle"
       "ghostty"
       "codex"
       "tailscale-app"
-      "raycast"
     ];
 
-    brews = [ "ampcode/tap/ampcode" "datadog-labs/pack/pup" ];
+    # amp only: every published version carries a `-g<sha>` prerelease suffix,
+    # so mise cannot resolve `latest` for it; pup moved to mise
+    brews = [ "ampcode/tap/ampcode" ];
   };
 }
