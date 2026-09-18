@@ -30,7 +30,7 @@
 
   # bigchungus is the consume side of dotfiles: pull and apply on a timer so
   # it can never drift behind. the mac captures and pushes via chezmoi-sync.
-  systemd.user = lib.mkIf pkgs.stdenv.isLinux {
+  systemd.user = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
     services.chezmoi-update = {
       Unit.Description = "pull and apply dotfiles";
       Service = {
@@ -64,14 +64,14 @@
     NPM_CONFIG_PREFIX = "$HOME/.local/state/npm";
     PATH = "$HOME/.local/state/npm/bin:$PATH";
   }
-  // lib.optionalAttrs pkgs.stdenv.isDarwin {
+  // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
     HOMEBREW_NO_AUTO_UPDATE = "";
   };
 
   home.file = {
     ".local/state/npm/.keep".text = "";
   }
-  // lib.optionalAttrs pkgs.stdenv.isDarwin {
+  // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
     ".config/ghostty/config".source = ./programs/ghostty/config;
     # ".config/zed/settings.json".source = ./programs/zed/settings.json;
     # ".config/zed/keymap.json".source = ./programs/zed/keymap.json;

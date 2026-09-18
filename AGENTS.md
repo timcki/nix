@@ -80,10 +80,10 @@ Dotfiles live in a separate chezmoi repo, not here.
 ## Auto-Upgrade
 
 bigchungus runs `system.autoUpgrade` nightly at 04:30 (+ up to 10 min jitter),
-building `git+https://tangled.org/tymek.me/nix`, so **pushing to `main` deploys
-the server**. `allowReboot = false` because the box runs a staking node; kernel
-changes need a manual reboot. Don't set `autoUpgrade.flags` for `--refresh` or
-`--flake`; the NixOS module already passes both.
+building the repo directly from its public Tangled knot, so **pushing to `main`
+deploys the server**. `allowReboot = false` because the box runs a staking node;
+kernel changes need a manual reboot. Don't set `autoUpgrade.flags` for
+`--refresh` or `--flake`; the NixOS module already passes both.
 
 `flags` does carry `--override-input filmnight`, and `switchn` on bigchungus
 passes the same list from the same `let` binding in
@@ -159,7 +159,8 @@ nix run github:ryantm/agenix -- -e mullvad-wg-key.age
 
 4. **Platform-specific config**: there are no `programs/darwin/` or
    `programs/nixos/` directories. Shared modules branch inline on
-   `pkgs.stdenv.isDarwin` / `isLinux`, usually via `lib.optionalAttrs`.
+   `pkgs.stdenv.hostPlatform.isDarwin` / `isLinux`, usually via
+   `lib.optionalAttrs`.
 
 5. **Home-manager vs system**: user-level config goes in `home.nix` or
    `programs/`. System-level goes in `darwin.nix` / `nixos.nix`, or in

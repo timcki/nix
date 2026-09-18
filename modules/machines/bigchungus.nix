@@ -6,7 +6,7 @@ let
   # `nix flake update` that never left the working copy was a deploy with a
   # twelve-hour life, and film night ran a fortnight-old commit while the lock
   # on disk insisted otherwise.
-  configFlake = "git+https://tangled.org/tymek.me/nix";
+  configFlake = "git+https://knot1.tangled.sh/did:plc:vhk4g55hbzwg6eha6r42wacw";
 
   # Film night is deliberately not pinned here: it follows its own main. What
   # makes that safe is that its build runs its own acceptance suite and type

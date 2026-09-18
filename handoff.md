@@ -3,9 +3,8 @@
 state after this session: dotfiles live on tangled (public, history scrubbed,
 api keys age-encrypted), nix repo lives on tangled with a github mirror,
 bigchungus self-converges (hourly `chezmoi update --force` user timer, nightly
-`system.autoUpgrade` from `git+https://tangled.org/tymek.me/nix`). toolchain
-is unified on mise for both boxes (node 24 + corepack pnpm verified on
-bigchungus).
+`system.autoUpgrade` directly from the repo's public Tangled knot). toolchain is
+unified on mise for both boxes (node 24 + corepack pnpm verified on bigchungus).
 
 ## todo
 
