@@ -53,7 +53,7 @@
     # dotfiles
     chezmoi
 
-    # send an exact local jj revision to an isolated Amp runner on bigchungus
+    # send an exact local jj revision to the general Amp runner on bigchungus
     (writeShellApplication {
       name = "amp-stage";
       runtimeInputs = [ coreutils gawk git jujutsu openssh ];
@@ -75,14 +75,42 @@
 
         root="$(jj root)"
         origin="$(jj -R "$root" git remote list | awk '$1 == "origin" { print $2 }')"
+        if [ -z "$origin" ]; then
+          echo "amp-stage: repository has no origin remote" >&2
+          exit 1
+        fi
+
         case "$origin" in
-          git@github.com:TokenTax/exchange-service-2.git|ssh://git@github.com/TokenTax/exchange-service-2.git|https://github.com/TokenTax/exchange-service-2.git)
+          *://*)
+            remote_path="''${origin#*://}"
+            remote_path="''${remote_path#*@}"
+            remote_path="''${remote_path#*/}"
+            ;;
+          *@*:*)
+            remote_path="''${origin#*:}"
             ;;
           *)
-            echo "amp-stage: only exchange-service-2 is supported, found origin: $origin" >&2
+            echo "amp-stage: unsupported origin: $origin" >&2
             exit 1
             ;;
         esac
+        remote_path="''${remote_path#/}"
+        remote_path="''${remote_path%.git}"
+        if [[ "$remote_path" != */* ]]; then
+          echo "amp-stage: origin must identify a namespace and repository: $origin" >&2
+          exit 1
+        fi
+
+        namespace="''${remote_path%/*}"
+        repo="''${remote_path##*/}"
+        if ! [[ "$namespace" =~ ^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$ ]] ||
+           ! [[ "$repo" =~ ^[A-Za-z0-9._-]+$ ]] ||
+           [[ "/$namespace/" == *"/./"* ]] ||
+           [[ "/$namespace/" == *"/../"* ]] ||
+           [ "$repo" = . ] || [ "$repo" = .. ]; then
+          echo "amp-stage: unsupported origin path: $remote_path" >&2
+          exit 1
+        fi
 
         # jj snapshots the working copy before resolving the selected revision.
         commit="$(jj -R "$root" log --no-graph -r "$revision" -T 'commit_id ++ "\n"')"
@@ -91,13 +119,17 @@
           exit 1
         fi
 
+        # shellcheck disable=SC2029
+        ssh bigchungus sudo amp-stage-server prepare "$namespace" "$repo"
+
         echo "sending $revision ($commit) to bigchungus"
         git -C "$root" push \
-          ssh://amp@bigchungus/home/amp/Sync/exchange-service-2.git \
+          "ssh://amp@bigchungus/home/amp/Sync/$namespace/$repo.git" \
           "$commit:refs/heads/snapshots/$commit"
 
         # shellcheck disable=SC2029
-        ssh bigchungus sudo amp-stage-server "$name" "$commit"
+        ssh bigchungus sudo amp-stage-server create \
+          "$name" "$commit" "$namespace" "$repo"
       '';
     })
 

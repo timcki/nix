@@ -1,13 +1,33 @@
 # Amp runner on bigchungus
 
-`amp-stage` sends an exact local exchange-service-2 jj revision to an isolated,
-persistent Amp runner on bigchungus. It transfers the selected Git commit and
-every missing ancestor, so linear stacks and non-linear revision graphs retain
-their original commit IDs, change IDs, descriptions, and topology.
+`bigchungus` is one persistent Amp runner serving repositories under
+`/home/amp/Repos` and staged revisions under `/home/amp/Workspaces`. Amp scans
+both trees every minute, so new checkouts appear without another runner process
+or a service restart.
 
-## Usage
+## Persistent repositories
 
-Run this from any exchange-service-2 jj workspace:
+Clone repositories as the `amp` user under an owner directory:
+
+```text
+/home/amp/Repos/tokentax/api-v2
+/home/amp/Repos/tokentax/exchange-service-2
+/home/amp/Repos/tymek/slurp
+```
+
+Select the checkout beneath the `bigchungus` runner when creating a thread.
+
+The persistent TokenTax checkout `/home/amp/Repos/tokentax/token-compose` is a
+sibling of every other TokenTax repository. Its mode-0600 `.env.compose` is
+therefore available at `../token-compose/.env.compose`.
+
+## Staging a local revision
+
+`amp-stage` sends an exact local Git-backed jj revision to bigchungus. It
+transfers the selected Git commit and every missing ancestor, then creates a
+dedicated jj workspace without publishing anything to the canonical remote.
+
+Run it from any supported jj workspace:
 
 ```bash
 amp-stage vitest @
@@ -16,33 +36,31 @@ amp-stage robinhood zslpnzoo
 
 The first argument is a short lowercase name. The optional second argument is
 any jj revision expression resolving to one commit and defaults to `@`. Running
-the command snapshots the local working copy as part of resolving the revision,
-but does not create a new change or publish anything to GitHub.
+the command snapshots the local working copy as part of resolving the revision.
 
-The command prints a runner ID such as:
+The command prints a path such as:
 
 ```text
-bigchungus-x-vitest-ca0a4f396585
+/home/amp/Workspaces/TokenTax-exchange-service-2-vitest-ca0a4f396585/exchange-service-2
 ```
 
-Select that runner when creating an Amp thread. Each unique name and commit gets
-its own server workspace, so syncing another revision never overwrites an active
-thread. Repeating the same command is idempotent and returns the existing runner.
+Select that path beneath the `bigchungus` runner. The runner discovers it within
+one minute. Repeating the same command is idempotent and returns the same path.
 
-## Server environment
+Staged TokenTax workspaces receive a sibling `token-compose` link matching the
+persistent repository layout. Other namespaces do not.
 
-Staged workspaces live under `/home/amp/Workspaces`. Each workspace shares the
-dedicated `amp` user's Amp login, GCloud credentials, GitHub SSH key, and pnpm
-content store. Its parent directory links `token-compose` to the persistent
-checkout, which provides the mode-0600 `.env.compose` used by `pnpm cli-sync`.
+## Toolchain
 
-Run this once in a fresh workspace before testing:
+The runner uses the same chezmoi-managed mise configuration as the macs and the
+`tim` user on bigchungus. An hourly service pulls the dotfiles repository over
+SSH, applies only the mise configuration, and upgrades the configured tools.
+Nix supplies the stable bootstrap tools and build environment. pnpm comes from
+Corepack and the repository's `packageManager` field.
 
-```bash
-corepack pnpm install --frozen-lockfile
-```
+Docker commands use the `amp` user's rootless daemon. They cannot reach the host
+daemon that runs system services.
 
-Runners and workspaces intentionally persist across disconnects and reboots.
-There is no automatic cleanup because deleting a workspace could destroy remote
-work. Stop and remove obsolete instances manually only after confirming their
-threads are finished.
+Repositories, workspaces, package caches, and runner state persist across
+disconnects and reboots. There is no automatic workspace cleanup because it
+could destroy unpublished work.

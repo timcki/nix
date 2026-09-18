@@ -64,9 +64,11 @@ let
   };
 
   ampRunnerPackages = with pkgs; [
-    amp-cli
     bashInteractive
+    clang
+    cmake
     corepack
+    curl
     datadog-pup
     fd
     git
@@ -76,15 +78,24 @@ let
     jq
     jujutsu
     linearCli
-    nodejs_24
+    mise
+    minisign
+    ninja
     openssh
+    pipx
     pkg-config
-    pnpm
     python3
     railway
     ripgrep
+    rsync
+    shellcheck
     stdenv.cc
+    unzip
+    uv
+    xz
   ];
+
+  ampRunnerPath = lib.makeBinPath ampRunnerPackages;
 
   ampStageServer = pkgs.writeShellApplication {
     name = "amp-stage-server";
@@ -96,46 +107,93 @@ let
         echo "amp-stage-server: must run as root" >&2
         exit 1
       fi
-      if [ "$#" -ne 2 ]; then
-        echo "usage: amp-stage-server <name> <commit>" >&2
-        exit 2
-      fi
 
-      name="$1"
-      commit="$2"
-      if ! [[ "$name" =~ ^[a-z0-9][a-z0-9-]{0,31}$ ]]; then
-        echo "amp-stage-server: invalid name" >&2
-        exit 2
-      fi
-      if ! [[ "$commit" =~ ^[0-9a-f]{40}$ ]]; then
-        echo "amp-stage-server: invalid commit" >&2
-        exit 2
-      fi
+      validate_repo() {
+        local namespace="$1"
+        local repo="$2"
+        if ! [[ "$namespace" =~ ^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$ ]] ||
+           ! [[ "$repo" =~ ^[A-Za-z0-9._-]+$ ]] ||
+           [[ "/$namespace/" == *"/./"* ]] ||
+           [[ "/$namespace/" == *"/../"* ]] ||
+           [ "$repo" = . ] || [ "$repo" = .. ]; then
+          echo "amp-stage-server: invalid repository path" >&2
+          exit 2
+        fi
+      }
 
-      bare=/home/amp/Sync/exchange-service-2.git
-      source=/home/amp/Repos/tokentax/exchange-service-2
-      workspace_id="$name-''${commit:0:12}"
-      workspace_root="/home/amp/Workspaces/$workspace_id"
-      workspace="$workspace_root/exchange-service-2"
+      case "''${1:-}" in
+        prepare)
+          if [ "$#" -ne 3 ]; then
+            echo "usage: amp-stage-server prepare <namespace> <repo>" >&2
+            exit 2
+          fi
+          namespace="$2"
+          repo="$3"
+          validate_repo "$namespace" "$repo"
+          bare="/home/amp/Sync/$namespace/$repo.git"
+          install -d -o amp -g amp -m 0700 "$(dirname "$bare")"
+          if [ ! -d "$bare" ]; then
+            runuser -u amp -- git init --bare "$bare"
+          fi
+          ;;
+        create)
+          if [ "$#" -ne 5 ]; then
+            echo "usage: amp-stage-server create <name> <commit> <namespace> <repo>" >&2
+            exit 2
+          fi
+          name="$2"
+          commit="$3"
+          namespace="$4"
+          repo="$5"
+          validate_repo "$namespace" "$repo"
+          if ! [[ "$name" =~ ^[a-z0-9][a-z0-9-]{0,31}$ ]]; then
+            echo "amp-stage-server: invalid name" >&2
+            exit 2
+          fi
+          if ! [[ "$commit" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "amp-stage-server: invalid commit" >&2
+            exit 2
+          fi
 
-      if ! runuser -u amp -- git --git-dir="$bare" cat-file -e "$commit^{commit}"; then
-        echo "amp-stage-server: commit was not received by the sync repository" >&2
-        exit 1
-      fi
+          bare="/home/amp/Sync/$namespace/$repo.git"
+          source="/home/amp/Sources/$namespace/$repo"
+          namespace_slug="''${namespace//\//-}"
+          workspace_id="$namespace_slug-$repo-$name-''${commit:0:12}"
+          workspace_root="/home/amp/Workspaces/$workspace_id"
+          workspace="$workspace_root/$repo"
 
-      if [ ! -e "$workspace/.jj" ]; then
-        install -d -o amp -g amp -m 0700 "$workspace_root"
-        runuser -u amp -- git -C "$source" fetch --no-write-fetch-head "$bare" \
-          "refs/heads/snapshots/$commit:refs/heads/amp-stage/$commit"
-        runuser -u amp -- jj -R "$source" --ignore-working-copy workspace add \
-          --name "amp-$workspace_id" --revision "$commit" "$workspace"
-        runuser -u amp -- ln -s /home/amp/Repos/tokentax/token-compose "$workspace_root/token-compose"
-      fi
+          if ! runuser -u amp -- git --git-dir="$bare" cat-file -e "$commit^{commit}"; then
+            echo "amp-stage-server: commit was not received by the sync repository" >&2
+            exit 1
+          fi
 
-      systemctl start "amp-runner-exchange@$workspace_id.service"
-      echo "runner: bigchungus-x-$workspace_id"
-      echo "path:   $workspace"
-      echo "next:   select that runner when creating the Amp thread"
+          if [ ! -d "$source/.jj" ]; then
+            install -d -o amp -g amp -m 0700 "$(dirname "$source")"
+            runuser -u amp -- git clone --no-checkout "$bare" "$source"
+            runuser -u amp -- jj git init --colocate "$source"
+          fi
+
+          if [ ! -e "$workspace/.jj" ]; then
+            install -d -o amp -g amp -m 0700 "$workspace_root"
+            runuser -u amp -- git -C "$source" fetch --no-write-fetch-head "$bare" \
+              "refs/heads/snapshots/$commit:refs/heads/amp-stage/$commit"
+            runuser -u amp -- jj -R "$source" workspace add \
+              --name "amp-$workspace_id" --revision "$commit" "$workspace"
+          fi
+          if [ "''${namespace,,}" = tokentax ]; then
+            runuser -u amp -- ln -sfn /home/amp/Repos/tokentax/token-compose \
+              "$workspace_root/token-compose"
+          fi
+
+          echo "runner: bigchungus"
+          echo "path:   $workspace"
+          echo "next:   select this path under the bigchungus runner"
+          ;;
+        *)
+          echo "usage: amp-stage-server <prepare|create> ..." >&2
+          exit 2
+          ;;
+      esac
     '';
   };
 
@@ -207,6 +265,27 @@ in
     autoPrune = {
       enable = true;
       dates = "weekly";
+    };
+    rootless = {
+      enable = true;
+      setSocketVariable = false;
+      extraPackages = with pkgs; [ fuse-overlayfs slirp4netns ];
+      daemon.settings = {
+        data-root = "/home/amp/.local/share/docker";
+        storage-driver = "fuse-overlayfs";
+      };
+    };
+  };
+
+  # the rootless Docker user unit is installed system-wide, but only the amp
+  # user should run it; tim continues to administer the host Docker daemon.
+  systemd.user.services.docker = {
+    unitConfig.ConditionUser = lib.mkForce "amp";
+    serviceConfig = {
+      CPUWeight = 20;
+      IOWeight = 20;
+      MemoryHigh = "4G";
+      MemoryMax = "6G";
     };
   };
 
@@ -380,20 +459,24 @@ in
   environment.systemPackages = [ pkgs.goatcounter ampStageServer switchn switchnLocal ];
 
   environment.etc."amp-runner/AGENTS.md".text = ''
-    # bigchungus Amp runners
+    # bigchungus Amp runner
 
     This session runs as the isolated `amp` user on bigchungus.
 
-    - The working directory is a dedicated jj workspace created by `amp-stage`.
-    - The selected local revision and its complete ancestor stack retain their
-      original commit and change IDs.
-    - Run `corepack pnpm install --frozen-lockfile` when `node_modules` is absent.
-      All workspaces share the amp user's pnpm content store.
-    - `../token-compose` links to the persistent checkout containing
-      `.env.compose`; `pnpm cli-sync` loads it automatically.
-    - Do not edit another workspace under `/home/amp/Workspaces` or the legacy
-      checkout under `/home/amp/Repos/tokentax/exchange-service-2`.
-    - The runner and workspace persist across client disconnects and reboots.
+    - Persistent repositories live under `/home/amp/Repos` and revisions sent
+      by `amp-stage` live under `/home/amp/Workspaces`.
+    - Use the mise-managed toolchain. pnpm comes from each repository's
+      `packageManager` through Corepack.
+    - Every TokenTax checkout has `token-compose` as a sibling. Its mode-0600
+      `.env.compose` is the shared source used by `pnpm cli-sync`.
+    - Docker uses the amp user's rootless daemon, never the host daemon that
+      runs system services.
+    - Do not edit another checkout or workspace unless the user asks.
+    - Repositories and workspaces persist across disconnects and reboots.
+  '';
+
+  environment.etc."amp-runner/tangled-known-hosts".text = ''
+    tangled.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2UShEm/FFPmYZUizaPnIqOJuynoCQpcLhl5PPHd02n
   '';
 
   # isolate the remotely controlled runner from personal files and host
@@ -402,22 +485,24 @@ in
   users.users.amp = {
     isNormalUser = true;
     description = "Amp remote runner";
+    uid = 1001;
     home = "/home/amp";
     createHome = true;
     homeMode = "0700";
     group = "amp";
     shell = pkgs.bashInteractive;
+    linger = true;
     packages = ampRunnerPackages;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDI2dfsVzngdYLmJ3T0StS3eI3IzLMlAi7XOfqt1uVBe tim@macbook-pro"
     ];
   };
 
-  systemd.services.amp-stage-init = {
-    description = "Initialize Amp revision staging";
+  systemd.services.amp-runner-init = {
+    description = "Initialize the Amp runner home";
     wantedBy = [ "multi-user.target" ];
-    before = [ "amp-runner-exchange.service" ];
-    path = [ pkgs.coreutils pkgs.git ];
+    before = [ "amp-bootstrap.service" "amp-mise-sync.service" "amp-runner.service" ];
+    path = [ pkgs.coreutils ];
     serviceConfig = {
       Type = "oneshot";
       User = "amp";
@@ -425,91 +510,113 @@ in
       UMask = "0077";
     };
     script = ''
-      mkdir -p /home/amp/Sync /home/amp/Workspaces /home/amp/.config/amp
-      if [ ! -d /home/amp/Sync/exchange-service-2.git ]; then
-        git init --bare /home/amp/Sync/exchange-service-2.git
-      fi
+      mkdir -p \
+        /home/amp/Repos \
+        /home/amp/Sources \
+        /home/amp/Sync \
+        /home/amp/Workspaces \
+        /home/amp/.config/amp \
+        /home/amp/.config/mise
       ln -sfn /etc/amp-runner/AGENTS.md /home/amp/.config/amp/AGENTS.md
     '';
   };
 
-  systemd.services.amp-stage-resume = {
-    description = "Resume staged Amp runners";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "amp-stage-init.service" ];
-    requires = [ "amp-stage-init.service" ];
-    path = [ pkgs.coreutils pkgs.systemd ];
-    serviceConfig.Type = "oneshot";
+  systemd.services.amp-bootstrap = {
+    description = "Install the self-updating Amp CLI";
+    after = [ "network-online.target" "amp-runner-init.service" ];
+    wants = [ "network-online.target" ];
+    requires = [ "amp-runner-init.service" ];
+    unitConfig.ConditionPathExists = "!/home/amp/.amp/bin/amp";
+    path = [ pkgs.bash pkgs.coreutils pkgs.curl pkgs.gzip pkgs.minisign ];
+    environment = {
+      HOME = "/home/amp";
+      AMP_HOME = "/home/amp/.amp";
+    };
+    serviceConfig = {
+      Type = "oneshot";
+      User = "amp";
+      Group = "amp";
+      UMask = "0077";
+    };
     script = ''
-      for workspace in /home/amp/Workspaces/*/exchange-service-2/.jj; do
-        if [ ! -e "$workspace" ]; then
-          continue
-        fi
-        instance="$(basename "$(dirname "$(dirname "$workspace")")")"
-        systemctl start "amp-runner-exchange@$instance.service"
-      done
+      installer="$(mktemp)"
+      trap 'rm -f "$installer"' EXIT
+      curl -fsSL https://ampcode.com/install.sh -o "$installer"
+      bash "$installer"
     '';
   };
 
-  systemd.slices.amp-runners.sliceConfig = {
-    CPUWeight = 20;
-    IOWeight = 20;
-    MemoryHigh = "8G";
-    MemoryMax = "10G";
+  systemd.services.amp-mise-sync = {
+    description = "Sync and install the Amp runner toolchain";
+    after = [ "network-online.target" "amp-runner-init.service" ];
+    wants = [ "network-online.target" ];
+    requires = [ "amp-runner-init.service" ];
+    path = ampRunnerPackages;
+    environment = {
+      HOME = "/home/amp";
+      XDG_CONFIG_HOME = "/home/amp/.config";
+      GIT_SSH_COMMAND = "ssh -o BatchMode=yes -o UserKnownHostsFile=/etc/amp-runner/tangled-known-hosts";
+    };
+    serviceConfig = {
+      Type = "oneshot";
+      User = "amp";
+      Group = "amp";
+      UMask = "0077";
+    };
+    script = ''
+      source=/home/amp/.local/share/chezmoi
+      if [ ! -d "$source/.git" ]; then
+        git clone git@tangled.org:did:plc:276qn75nkn4upl3oapzf6utp "$source"
+      else
+        git -C "$source" pull --ff-only
+      fi
+      install -Dm644 "$source/dot_config/mise/config.toml" \
+        /home/amp/.config/mise/config.toml
+      mise install --yes
+      mise upgrade --yes
+    '';
   };
 
-  systemd.services.amp-runner-exchange = {
-    description = "Amp runner for exchange-service-2";
+  systemd.timers.amp-mise-sync = {
+    description = "Periodically sync the Amp runner toolchain";
     wantedBy = [ "multi-user.target" ];
-    wants = [ "network-online.target" ];
-    after = [ "network-online.target" ];
-    unitConfig.ConditionPathIsDirectory = "/home/amp/Repos/tokentax/exchange-service-2/.jj";
-    path = ampRunnerPackages;
-    environment = {
-      HOME = "/home/amp";
-      XDG_CONFIG_HOME = "/home/amp/.config";
-      AMP_SKIP_UPDATE_CHECK = "1";
-    };
-    serviceConfig = {
-      User = "amp";
-      Group = "amp";
-      WorkingDirectory = "/home/amp/Repos/tokentax/exchange-service-2";
-      ExecStart = "${pkgs.amp-cli}/bin/amp --no-tui --runner-id bigchungus-exchange --remote-control-terminal";
-      Restart = "always";
-      RestartSec = "5s";
-      UMask = "0077";
-      Nice = 10;
-      CPUWeight = 20;
-      IOWeight = 20;
-      MemoryHigh = "6G";
-      MemoryMax = "8G";
-      OOMScoreAdjust = 500;
-      NoNewPrivileges = true;
-      PrivateDevices = true;
-      ProtectSystem = "full";
-      ProtectKernelTunables = true;
-      ProtectKernelModules = true;
-      ProtectControlGroups = true;
-      RestrictSUIDSGID = true;
+    timerConfig = {
+      OnCalendar = "hourly";
+      Persistent = true;
+      RandomizedDelaySec = "5m";
     };
   };
 
-  systemd.services."amp-runner-exchange@" = {
-    description = "Amp runner for staged exchange-service-2 revision %i";
-    wants = [ "network-online.target" ];
-    after = [ "network-online.target" "amp-stage-init.service" ];
-    unitConfig.ConditionPathIsDirectory = "/home/amp/Workspaces/%i/exchange-service-2/.jj";
-    path = ampRunnerPackages;
+  systemd.services.amp-runner = {
+    description = "General Amp runner";
+    wantedBy = [ "multi-user.target" ];
+    after = [
+      "network-online.target"
+      "amp-bootstrap.service"
+      "amp-mise-sync.service"
+      "amp-runner-init.service"
+    ];
+    wants = [ "network-online.target" "amp-mise-sync.service" ];
+    requires = [ "amp-bootstrap.service" "amp-runner-init.service" ];
     environment = {
       HOME = "/home/amp";
       XDG_CONFIG_HOME = "/home/amp/.config";
-      AMP_SKIP_UPDATE_CHECK = "1";
+      DOCKER_HOST = "unix:///run/user/1001/docker.sock";
+      PATH = lib.mkForce "/home/amp/.local/share/mise/shims:/home/amp/.local/bin:${ampRunnerPath}";
     };
     serviceConfig = {
       User = "amp";
       Group = "amp";
-      WorkingDirectory = "/home/amp/Workspaces/%i/exchange-service-2";
-      ExecStart = "${pkgs.amp-cli}/bin/amp --no-tui --runner-id bigchungus-x-%i --remote-control-terminal";
+      WorkingDirectory = "/home/amp/Repos";
+      ExecStart = lib.concatStringsSep " " [
+        "/home/amp/.amp/bin/amp"
+        "--no-tui"
+        "--runner-id bigchungus"
+        "--remote-control-terminal"
+        "--discover-dirs=/home/amp/Repos"
+        "--discover-dirs=/home/amp/Workspaces"
+        "--discover-depth=3"
+      ];
       Restart = "always";
       RestartSec = "5s";
       UMask = "0077";
@@ -519,7 +626,6 @@ in
       MemoryHigh = "6G";
       MemoryMax = "8G";
       OOMScoreAdjust = 500;
-      Slice = "amp-runners.slice";
       NoNewPrivileges = true;
       PrivateDevices = true;
       ProtectSystem = "full";
