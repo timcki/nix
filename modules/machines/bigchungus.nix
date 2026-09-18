@@ -465,6 +465,9 @@ in
 
     - Persistent repositories live under `/home/amp/Repos` and revisions sent
       by `amp-stage` live under `/home/amp/Workspaces`.
+    - Clone with an SSH URL using `jj git clone`, never an HTTPS URL. Use jj,
+      not Git, for version control. If a clone has no `.jj` directory, run
+      `jj git init --colocate` in it before making changes.
     - Use the mise-managed toolchain. pnpm comes from each repository's
       `packageManager` through Corepack.
     - Every TokenTax checkout has `token-compose` as a sibling. Its mode-0600
@@ -478,6 +481,17 @@ in
   environment.etc."amp-runner/tangled-known-hosts".text = ''
     tangled.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2UShEm/FFPmYZUizaPnIqOJuynoCQpcLhl5PPHd02n
   '';
+
+  environment.etc."amp-runner/git-template/hooks/post-checkout" = {
+    mode = "0755";
+    text = ''
+      #!${pkgs.runtimeShell}
+      set -eu
+
+      worktree="$(${pkgs.git}/bin/git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+      [ -d "$worktree/.jj" ] || ${pkgs.jujutsu}/bin/jj git init --colocate "$worktree"
+    '';
+  };
 
   # isolate the remotely controlled runner from personal files and host
   # administration. project credentials live only in this user's home.
@@ -502,7 +516,11 @@ in
     description = "Initialize the Amp runner home";
     wantedBy = [ "multi-user.target" ];
     before = [ "amp-bootstrap.service" "amp-mise-sync.service" "amp-runner.service" ];
-    path = [ pkgs.coreutils ];
+    path = with pkgs; [ coreutils findutils gh git jujutsu ];
+    environment = {
+      HOME = "/home/amp";
+      XDG_CONFIG_HOME = "/home/amp/.config";
+    };
     serviceConfig = {
       Type = "oneshot";
       User = "amp";
@@ -518,6 +536,21 @@ in
         /home/amp/.config/amp \
         /home/amp/.config/mise
       ln -sfn /etc/amp-runner/AGENTS.md /home/amp/.config/amp/AGENTS.md
+
+      git config --global init.templateDir /etc/amp-runner/git-template
+      git config --global url."git@github.com:".insteadOf https://github.com/
+      git config --global url."git@gitlab.com:".insteadOf https://gitlab.com/
+      git config --global url."git@bitbucket.org:".insteadOf https://bitbucket.org/
+      git config --global url."git@codeberg.org:".insteadOf https://codeberg.org/
+      git config --global url."git@tangled.org:".insteadOf https://tangled.org/
+      gh config set git_protocol ssh --host github.com
+
+      while IFS= read -r -d "" git_dir; do
+        repo="$(dirname "$git_dir")"
+        if [ ! -d "$repo/.jj" ]; then
+          jj git init --colocate "$repo"
+        fi
+      done < <(find /home/amp/Repos -name .git -prune -print0)
     '';
   };
 

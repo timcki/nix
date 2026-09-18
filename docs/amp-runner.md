@@ -15,6 +15,18 @@ Clone repositories as the `amp` user under an owner directory:
 /home/amp/Repos/tymek/slurp
 ```
 
+Use an SSH URL and let jj perform the clone:
+
+```bash
+mkdir -p /home/amp/Repos/tokentax
+jj git clone git@github.com:TokenTax/api-v2.git /home/amp/Repos/tokentax/api-v2
+```
+
+The runner rewrites HTTPS clone URLs for GitHub, GitLab, Bitbucket, Codeberg,
+and Tangled to SSH as a fallback. A Git template hook initializes plain
+`git clone` results as colocated jj repositories, and the runner init service
+also repairs any Git-only repository under `/home/amp/Repos` after a reboot.
+
 Select the checkout beneath the `bigchungus` runner when creating a thread.
 
 The persistent TokenTax checkout `/home/amp/Repos/tokentax/token-compose` is a
