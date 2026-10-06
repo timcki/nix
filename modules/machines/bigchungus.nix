@@ -517,8 +517,8 @@ in
   systemd.services.amp-runner-init = {
     description = "Initialize the Amp runner home";
     wantedBy = [ "multi-user.target" ];
-    before = [ "amp-bootstrap.service" "amp-mise-sync.service" "amp-runner.service" ];
-    path = with pkgs; [ coreutils findutils gh git gnugrep jujutsu ];
+    before = [ "amp-bootstrap.service" "amp-claude.service" "amp-mise-sync.service" "amp-runner.service" ];
+    path = with pkgs; [ coreutils findutils gh git gnugrep jq jujutsu ];
     environment = {
       HOME = "/home/amp";
       XDG_CONFIG_HOME = "/home/amp/.config";
@@ -543,6 +543,12 @@ in
       shims='export PATH="$HOME/.local/share/mise/shims:$PATH"'
       grep -qxF "$shims" /home/amp/.bashrc 2>/dev/null || echo "$shims" >> /home/amp/.bashrc
       [ -e /home/amp/.bash_profile ] || echo '. ~/.bashrc' > /home/amp/.bash_profile
+
+      # answer amp-claude's folder trust prompt up front; nobody is attached to answer it
+      claude_json=/home/amp/.claude.json
+      [ -s "$claude_json" ] || echo '{}' > "$claude_json"
+      jq '.projects["/home/amp/Repos"].hasTrustDialogAccepted = true' "$claude_json" > "$claude_json.tmp"
+      mv "$claude_json.tmp" "$claude_json"
 
       git config --global init.templateDir /etc/amp-runner/git-template
       git config --global url."git@github.com:".insteadOf https://github.com/
