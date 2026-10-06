@@ -5,6 +5,40 @@
   ...
 }:
 
+let
+  refreshTrackpadGestures = pkgs.runCommandCC "refresh-trackpad-gestures" { } ''
+    mkdir -p $out/bin
+    cat > refresh-trackpad-gestures.m <<'EOF'
+    #import <Foundation/Foundation.h>
+    #import <dlfcn.h>
+
+    @interface MTTGestureBackEnd : NSObject
+    + (instancetype)sharedInstance;
+    - (long long)threeFingerVertSwipe;
+    - (void)setThreeFingerVertSwipe:(long long)value;
+    @end
+
+    int main(void) {
+      if (!dlopen("/System/Library/PrivateFrameworks/PreferencePanesSupport.framework/PreferencePanesSupport", RTLD_NOW)) {
+        return 1;
+      }
+
+      MTTGestureBackEnd *backend = [NSClassFromString(@"MTTGestureBackEnd") sharedInstance];
+      if (!backend) {
+        return 1;
+      }
+
+      long long original = [backend threeFingerVertSwipe];
+      [backend setThreeFingerVertSwipe:0];
+      [NSThread sleepForTimeInterval:0.25];
+      [backend setThreeFingerVertSwipe:original];
+      return 0;
+    }
+    EOF
+    $CC -fobjc-arc -framework Foundation refresh-trackpad-gestures.m \
+      -o $out/bin/refresh-trackpad-gestures
+  '';
+in
 {
   nix.enable = true;
 
@@ -37,6 +71,8 @@
     dock = {
       autohide = true;
       orientation = "bottom";
+      showAppExposeGestureEnabled = true;
+      showMissionControlGestureEnabled = true;
       show-recents = false;
     };
 
@@ -57,7 +93,20 @@
     trackpad = {
       Clicking = true;
       TrackpadThreeFingerDrag = true;
+      TrackpadThreeFingerVertSwipeGesture = 2;
     };
+  };
+
+  # toggle the gesture backend after login so it reloads vertical swipes
+  launchd.user.agents.refresh-trackpad-gestures = {
+    script = ''
+      until /usr/bin/pgrep -x Dock >/dev/null; do
+        /bin/sleep 1
+      done
+      /bin/sleep 3
+      ${refreshTrackpadGestures}/bin/refresh-trackpad-gestures
+    '';
+    serviceConfig.RunAtLoad = true;
   };
 
   system.configurationRevision = null;
