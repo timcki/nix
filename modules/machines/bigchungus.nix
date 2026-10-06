@@ -1,4 +1,4 @@
-{ config, lib, pkgs, slurp, ... }:
+{ config, lib, pkgs, slurp, tobi, ... }:
 
 let
   # One definition for the nightly upgrade and for switchn. They used to be two:
@@ -96,6 +96,8 @@ let
   ];
 
   ampRunnerPath = lib.makeBinPath ampRunnerPackages;
+
+  tobiPackage = tobi.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   ampStageServer = pkgs.writeShellApplication {
     name = "amp-stage-server";
@@ -506,7 +508,7 @@ in
     group = "amp";
     shell = pkgs.bashInteractive;
     linger = true;
-    packages = ampRunnerPackages;
+    packages = ampRunnerPackages ++ [ tobiPackage ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDI2dfsVzngdYLmJ3T0StS3eI3IzLMlAi7XOfqt1uVBe tim@macbook-pro"
     ];
@@ -657,6 +659,49 @@ in
       ];
       Restart = "always";
       RestartSec = "5s";
+      UMask = "0077";
+      Nice = 10;
+      CPUWeight = 20;
+      IOWeight = 20;
+      MemoryHigh = "6G";
+      MemoryMax = "8G";
+      OOMScoreAdjust = 500;
+      NoNewPrivileges = true;
+      PrivateDevices = true;
+      ProtectSystem = "full";
+      ProtectKernelTunables = true;
+      ProtectKernelModules = true;
+      ProtectControlGroups = true;
+      RestrictSUIDSGID = true;
+    };
+  };
+
+  # a claude remote-control server inside a tobi session, so it can be driven
+  # from claude.ai and also attached as a terminal with `tobi amp@bigchungus.claude`.
+  # tobi closes a session 24h after its last viewer leaves; systemd restarts it.
+  systemd.services.amp-claude = {
+    description = "Claude Code remote control for the Amp runner";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network-online.target" "amp-mise-sync.service" "amp-runner-init.service" ];
+    wants = [ "network-online.target" "amp-mise-sync.service" ];
+    requires = [ "amp-runner-init.service" ];
+    environment = {
+      HOME = "/home/amp";
+      XDG_CONFIG_HOME = "/home/amp/.config";
+      XDG_RUNTIME_DIR = "/run/user/1001";
+      DOCKER_HOST = "unix:///run/user/1001/docker.sock";
+      PATH = lib.mkForce "/home/amp/.local/share/mise/shims:/home/amp/.local/bin:${ampRunnerPath}";
+      # run as the session owner directly; a plain `tobi -- cmd` would try to attach a terminal
+      TOBI_OWNER = "1";
+      TOBI_ID = "claude";
+    };
+    serviceConfig = {
+      User = "amp";
+      Group = "amp";
+      WorkingDirectory = "/home/amp/Repos";
+      ExecStart = "${tobiPackage}/bin/tobi claude remote-control --name bigchungus";
+      Restart = "always";
+      RestartSec = "30s";
       UMask = "0077";
       Nice = 10;
       CPUWeight = 20;

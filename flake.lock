@@ -115,6 +115,39 @@
         "type": "github"
       }
     },
+    "nixpkgs-lib": {
+      "locked": {
+        "lastModified": 1788057806,
+        "narHash": "sha256-DTQSMxzDWmT0zhguthvegnVkn7CFqGCv4IHCzk5ZUpM=",
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "rev": "596e2e3940e09b2abbeb03f75fa1828c57fcd72c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "type": "github"
+      }
+    },
+    "parts": {
+      "inputs": {
+        "nixpkgs-lib": "nixpkgs-lib"
+      },
+      "locked": {
+        "lastModified": 1788450739,
+        "narHash": "sha256-glZLQlzIn1fXH6PazR2iUmTo7kzzyYSshrWhLS9TqCU=",
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "rev": "31729ca8cbdb4fa927b34e5f4353e6a83f39e993",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -122,7 +155,8 @@
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs",
-        "slurp": "slurp"
+        "slurp": "slurp",
+        "tobi": "tobi"
       }
     },
     "slurp": {
@@ -159,6 +193,27 @@
         "owner": "nix-systems",
         "repo": "default",
         "type": "github"
+      }
+    },
+    "tobi": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "parts": "parts"
+      },
+      "locked": {
+        "lastModified": 1790525272,
+        "narHash": "sha256-SR+qeX97vLqtZbemJuEw4QtaQqgJRSoqSsaVkUua9Tk=",
+        "ref": "refs/heads/main",
+        "rev": "f6e792dbe331211aa9a29c4154e4ec3e1e3ff28d",
+        "revCount": 106,
+        "type": "git",
+        "url": "https://tangled.org/ptr.pet/tobi"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://tangled.org/ptr.pet/tobi"
       }
     }
   },
