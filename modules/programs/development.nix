@@ -7,12 +7,13 @@
 
 let
   inherit (pkgs.stdenv.hostPlatform) isDarwin isLinux;
-  # per-machine ssh signing keys: bigboi vs server
+  # per-machine ssh signing keys: bigboi vs server. the server signs from its
+  # key file, since its agent starts empty after every restart
   signingKey =
     if isDarwin then
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3zNKM+CpNS5isd8MkCbPy6qTYbPlbVeyqm3hG5FYww"
     else
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICBhciZJdPz1Kq8li2Hs5JLgD4lnhlAtu+0mX65swXpN";
+      "${config.home.homeDirectory}/.ssh/id_ed25519";
 in
 {
   programs = {
