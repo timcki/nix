@@ -516,7 +516,7 @@ in
     description = "Initialize the Amp runner home";
     wantedBy = [ "multi-user.target" ];
     before = [ "amp-bootstrap.service" "amp-mise-sync.service" "amp-runner.service" ];
-    path = with pkgs; [ coreutils findutils gh git jujutsu ];
+    path = with pkgs; [ coreutils findutils gh git gnugrep jujutsu ];
     environment = {
       HOME = "/home/amp";
       XDG_CONFIG_HOME = "/home/amp/.config";
@@ -536,6 +536,11 @@ in
         /home/amp/.config/amp \
         /home/amp/.config/mise
       ln -sfn /etc/amp-runner/AGENTS.md /home/amp/.config/amp/AGENTS.md
+
+      # match the runner's PATH in ssh sessions; the amp installer owns the rest of .bashrc
+      shims='export PATH="$HOME/.local/share/mise/shims:$PATH"'
+      grep -qxF "$shims" /home/amp/.bashrc 2>/dev/null || echo "$shims" >> /home/amp/.bashrc
+      [ -e /home/amp/.bash_profile ] || echo '. ~/.bashrc' > /home/amp/.bash_profile
 
       git config --global init.templateDir /etc/amp-runner/git-template
       git config --global url."git@github.com:".insteadOf https://github.com/
