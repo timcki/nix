@@ -725,6 +725,47 @@ in
     };
   };
 
+  # amp-mise-sync upgrades claude-code and deletes the old version, leaving
+  # remote-control on a binary it can no longer re-exec to spawn sessions.
+  # restart it onto the new one once every spawned session has sat idle a while.
+  systemd.services.amp-claude-follow-upgrade = {
+    description = "Restart amp-claude onto an upgraded claude-code";
+    onFailure = [ "unit-failure@%n.service" ];
+    path = with pkgs; [ coreutils jq procps systemd ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      installs=/home/amp/.local/share/mise/installs/claude-code
+      latest="$(readlink -f "$installs/latest/claude")" || exit 0
+      rc="$(pgrep -u amp -f "^$installs/[^/]+/claude remote-control")" || exit 0
+      running="$(readlink "/proc/$rc/exe")"
+      [ "$running" != "$latest" ] || exit 0
+
+      # each spawned session is a child process with a status file; null, busy
+      # and waiting (on a permission prompt) all mean someone is mid-turn
+      now="$(date +%s%3N)"
+      for pid in $(pgrep -P "$rc"); do
+        if ! jq -e --argjson now "$now" \
+          '.status == "idle" and $now - .statusUpdatedAt > 600000' \
+          "/home/amp/.claude/sessions/$pid.json" > /dev/null 2>&1; then
+          echo "session $pid not idle for 10 minutes, retrying later"
+          exit 0
+        fi
+      done
+
+      echo "restarting amp-claude: running $running, latest $latest"
+      systemctl try-restart amp-claude.service
+    '';
+  };
+
+  systemd.timers.amp-claude-follow-upgrade = {
+    description = "Periodically move amp-claude onto an upgraded claude-code";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "*:0/5";
+      Persistent = true;
+    };
+  };
+
   # The goatcounter module runs under DynamicUser, which makes the one-off
   # "goatcounter db create site" runs awkward; a fixed user keeps
   # /var/lib/goatcounter reachable for site creation and sqlite backups
