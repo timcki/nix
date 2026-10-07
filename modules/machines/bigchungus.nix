@@ -99,6 +99,82 @@ let
 
   tobiPackage = tobi.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
+  ampClaude = lib.recursiveUpdate {
+    after = [ "network-online.target" "amp-mise-sync.service" "amp-runner-init.service" ];
+    wants = [ "network-online.target" "amp-mise-sync.service" ];
+    requires = [ "amp-runner-init.service" ];
+    environment = {
+      HOME = "/home/amp";
+      XDG_CONFIG_HOME = "/home/amp/.config";
+      XDG_RUNTIME_DIR = "/run/user/1001";
+      DOCKER_HOST = "unix:///run/user/1001/docker.sock";
+      PATH = lib.mkForce "/home/amp/.local/share/mise/shims:/home/amp/.local/bin:${ampRunnerPath}";
+    };
+    serviceConfig = {
+      User = "amp";
+      Group = "amp";
+      Slice = "amp-claude.slice";
+      Restart = "always";
+      RestartSec = "30s";
+      UMask = "0077";
+      Nice = 10;
+      CPUWeight = 20;
+      IOWeight = 20;
+      OOMScoreAdjust = 500;
+      NoNewPrivileges = true;
+      PrivateDevices = true;
+      ProtectSystem = "full";
+      ProtectKernelTunables = true;
+      ProtectKernelModules = true;
+      ProtectControlGroups = true;
+      RestrictSUIDSGID = true;
+    };
+  };
+
+  # marks directories as trusted in ~/.claude.json, so remote-control starts
+  # without a terminal to answer the prompt. trust in Repos doesn't carry into
+  # git repos below it. takes claude's own proper-lockfile lock (a directory
+  # whose mtime a live holder keeps fresh) so neither side loses a write.
+  ampClaudeTrust = pkgs.writeShellApplication {
+    name = "amp-claude-trust";
+    runtimeInputs = with pkgs; [ coreutils jq ];
+    text = ''
+      config=/home/amp/.claude.json
+      lock="$config.lock"
+      trusted="reduce \$ARGS.positional[] as \$d (.; .projects[\$d].hasTrustDialogAccepted = true)"
+
+      if [ -s "$config" ] && jq -e --args "($trusted) == ." "$@" < "$config" > /dev/null; then
+        exit 0
+      fi
+
+      held=
+      for _ in $(seq 50); do
+        if mkdir "$lock" 2> /dev/null; then
+          held=1
+          break
+        fi
+        mtime="$(stat -c %Y "$lock" 2> /dev/null)" || continue
+        if [ $(($(date +%s) - mtime)) -gt 60 ]; then
+          rmdir "$lock" 2> /dev/null || true
+          continue
+        fi
+        sleep 0.2
+      done
+      if [ -z "$held" ]; then
+        echo "amp-claude-trust: $lock still held, leaving $config alone" >&2
+        exit 1
+      fi
+      trap 'rmdir "$lock"' EXIT
+
+      [ -s "$config" ] || echo '{}' > "$config"
+      jq --args "$trusted" "$@" < "$config" > "$config.tmp"
+      mv "$config.tmp" "$config"
+    '';
+  };
+
+  # mise's shim execs the current claude-code, so the service's main process is claude itself
+  ampClaudeBin = "/home/amp/.local/share/mise/shims/claude";
+
   ampStageServer = pkgs.writeShellApplication {
     name = "amp-stage-server";
     runtimeInputs = with pkgs; [ coreutils git jujutsu systemd util-linux ];
@@ -544,11 +620,7 @@ in
       grep -qxF "$shims" /home/amp/.bashrc 2>/dev/null || echo "$shims" >> /home/amp/.bashrc
       [ -e /home/amp/.bash_profile ] || echo '. ~/.bashrc' > /home/amp/.bash_profile
 
-      # answer amp-claude's folder trust prompt up front; nobody is attached to answer it
-      claude_json=/home/amp/.claude.json
-      [ -s "$claude_json" ] || echo '{}' > "$claude_json"
-      jq '.projects["/home/amp/Repos"].hasTrustDialogAccepted = true' "$claude_json" > "$claude_json.tmp"
-      mv "$claude_json.tmp" "$claude_json"
+      ${ampClaudeTrust}/bin/amp-claude-trust /home/amp/Repos
 
       git config --global init.templateDir /etc/amp-runner/git-template
       git config --global url."git@github.com:".insteadOf https://github.com/
@@ -682,83 +754,110 @@ in
     };
   };
 
-  # a claude remote-control server inside a tobi session, so it can be driven
-  # from claude.ai and also attached as a terminal with `tobi amp@bigchungus.claude`.
-  # tobi closes a session 24h after its last viewer leaves; systemd restarts it.
-  systemd.services.amp-claude = {
+  # claude remote-control servers driven from claude.ai. one serves Repos, for
+  # cloning and cross-repo work; each repo directory gets its own so sessions
+  # start with that repo's CLAUDE.md and project settings. output goes to the
+  # journal: `journalctl -u amp-claude@tokentax`.
+  systemd.services.amp-claude = ampClaude {
     description = "Claude Code remote control for the Amp runner";
     wantedBy = [ "multi-user.target" ];
-    after = [ "network-online.target" "amp-mise-sync.service" "amp-runner-init.service" ];
-    wants = [ "network-online.target" "amp-mise-sync.service" ];
-    requires = [ "amp-runner-init.service" ];
-    environment = {
-      HOME = "/home/amp";
-      XDG_CONFIG_HOME = "/home/amp/.config";
-      XDG_RUNTIME_DIR = "/run/user/1001";
-      DOCKER_HOST = "unix:///run/user/1001/docker.sock";
-      PATH = lib.mkForce "/home/amp/.local/share/mise/shims:/home/amp/.local/bin:${ampRunnerPath}";
-      # run as the session owner directly; a plain `tobi -- cmd` would try to attach a terminal
-      TOBI_OWNER = "1";
-      TOBI_ID = "claude";
-    };
     serviceConfig = {
-      User = "amp";
-      Group = "amp";
       WorkingDirectory = "/home/amp/Repos";
-      ExecStart = "${tobiPackage}/bin/tobi claude remote-control --name bigchungus";
-      Restart = "always";
-      RestartSec = "30s";
-      UMask = "0077";
-      Nice = 10;
-      CPUWeight = 20;
-      IOWeight = 20;
-      MemoryHigh = "6G";
-      MemoryMax = "8G";
-      OOMScoreAdjust = 500;
-      NoNewPrivileges = true;
-      PrivateDevices = true;
-      ProtectSystem = "full";
-      ProtectKernelTunables = true;
-      ProtectKernelModules = true;
-      ProtectControlGroups = true;
-      RestrictSUIDSGID = true;
+      ExecStart = "${ampClaudeBin} remote-control --name bigchungus";
     };
+  };
+
+  # started and stopped by amp-claude-repos, not enabled directly
+  systemd.services."amp-claude@" = ampClaude {
+    description = "Claude Code remote control for /home/amp/Repos/%I";
+    unitConfig.ConditionPathIsDirectory = "/home/amp/Repos/%I";
+    serviceConfig = {
+      WorkingDirectory = "/home/amp/Repos/%I";
+      ExecStartPre = "${ampClaudeTrust}/bin/amp-claude-trust /home/amp/Repos/%I";
+      ExecStart = "${ampClaudeBin} remote-control --name bigchungus/%I";
+    };
+  };
+
+  # keep one amp-claude@ instance per directory directly under Repos
+  systemd.services.amp-claude-repos = {
+    description = "Match amp-claude@ instances to the directories in Repos";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "amp-runner-init.service" ];
+    onFailure = [ "unit-failure@%n.service" ];
+    path = with pkgs; [ coreutils systemd ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      shopt -s nullglob
+      declare -A want
+      for dir in /home/amp/Repos/*/; do
+        dir="''${dir%/}"
+        [ -L "$dir" ] && continue
+        want["amp-claude@$(systemd-escape -- "$(basename "$dir")").service"]=1
+      done
+
+      for unit in $(systemctl list-units --all --plain --no-legend 'amp-claude@*.service' | cut -d' ' -f1); do
+        [ -n "''${want[$unit]:-}" ] || systemctl stop "$unit"
+      done
+      [ "''${#want[@]}" -eq 0 ] || systemctl start --no-block "''${!want[@]}"
+    '';
   };
 
   # amp-mise-sync upgrades claude-code and deletes the old version, leaving
   # remote-control on a binary it can no longer re-exec to spawn sessions.
-  # restart it onto the new one once every spawned session has sat idle a while.
+  # restart each server onto the new one once its sessions have sat idle a while.
   systemd.services.amp-claude-follow-upgrade = {
-    description = "Restart amp-claude onto an upgraded claude-code";
+    description = "Restart amp-claude servers onto an upgraded claude-code";
     onFailure = [ "unit-failure@%n.service" ];
     path = with pkgs; [ coreutils jq procps systemd ];
     serviceConfig.Type = "oneshot";
     script = ''
       installs=/home/amp/.local/share/mise/installs/claude-code
       latest="$(readlink -f "$installs/latest/claude")" || exit 0
-      rc="$(pgrep -u amp -f "^$installs/[^/]+/claude remote-control")" || exit 0
-      running="$(readlink "/proc/$rc/exe")"
-      [ "$running" != "$latest" ] || exit 0
 
       # each spawned session is a child process with a status file; null, busy
       # and waiting (on a permission prompt) all mean someone is mid-turn
-      now="$(date +%s%3N)"
-      for pid in $(pgrep -P "$rc"); do
-        if ! jq -e --argjson now "$now" \
-          '.status == "idle" and $now - .statusUpdatedAt > 600000' \
-          "/home/amp/.claude/sessions/$pid.json" > /dev/null 2>&1; then
-          echo "session $pid not idle for 10 minutes, retrying later"
-          exit 0
-        fi
-      done
+      sessions_idle() {
+        local now pid
+        now="$(date +%s%3N)"
+        for pid in $(pgrep -P "$1"); do
+          jq -e --argjson now "$now" \
+            '.status == "idle" and $now - .statusUpdatedAt > 600000' \
+            "/home/amp/.claude/sessions/$pid.json" > /dev/null 2>&1 || return 1
+        done
+      }
 
-      echo "restarting amp-claude: running $running, latest $latest"
-      systemctl try-restart amp-claude.service
+      for rc in $(pgrep -u amp -f "^$installs/[^/]+/claude remote-control"); do
+        running="$(readlink "/proc/$rc/exe")"
+        [ "$running" != "$latest" ] || continue
+        unit="$(basename "$(cut -d: -f3- "/proc/$rc/cgroup")")"
+        [[ "$unit" == amp-claude*.service ]] || continue
+        if ! sessions_idle "$rc"; then
+          echo "$unit: sessions not idle for 10 minutes, retrying later"
+          continue
+        fi
+        echo "$unit: restarting, running $running, latest $latest"
+        systemctl try-restart "$unit"
+      done
     '';
   };
 
+  # shared by every remote-control server and the sessions they spawn
+  systemd.slices.amp-claude = {
+    description = "Claude Code remote control for the Amp runner";
+    sliceConfig = {
+      MemoryHigh = "6G";
+      MemoryMax = "8G";
+    };
+  };
+
+  systemd.paths.amp-claude-repos = {
+    description = "Watch Repos for added or removed directories";
+    wantedBy = [ "paths.target" ];
+    pathConfig.PathChanged = "/home/amp/Repos";
+  };
+
   systemd.timers.amp-claude-follow-upgrade = {
-    description = "Periodically move amp-claude onto an upgraded claude-code";
+    description = "Periodically move amp-claude servers onto an upgraded claude-code";
     wantedBy = [ "timers.target" ];
     timerConfig = {
       OnCalendar = "*:0/5";
