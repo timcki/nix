@@ -287,6 +287,7 @@ in
     ../services/arr-stack.nix
     ../services/samba.nix
     ../services/filmnight.nix
+    ../services/things-cloud-mcp.nix
     ../services/unit-failure.nix
   ];
 
@@ -534,6 +535,8 @@ in
       enable = true;
       demo.enable = true;
     };
+
+    things-cloud-mcp.enable = true;
   };
   # cli for site creation, exports and sqlite maintenance
   environment.systemPackages = [ pkgs.goatcounter ampStageServer switchn switchnLocal ];
@@ -887,8 +890,9 @@ in
 
   # Firewall: Tailscale-only ports (arr stack + Grafana + film night and its
   # public demo, which chungus-1 reverse proxies for film.tymek.me and
-  # demo.film.tymek.me, + goatcounter on 8447)
-  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 3010 3011 3100 9443 8443 8444 8445 8446 8447 ];
+  # demo.film.tymek.me, + goatcounter on 8447, + things cloud mcp on 3020,
+  # which chungus-1 reverse proxies for things.tymek.me)
+  networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 3010 3011 3020 3100 9443 8443 8444 8445 8446 8447 ];
 
   system.stateVersion = "25.11";
 }
