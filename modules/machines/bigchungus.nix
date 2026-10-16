@@ -255,7 +255,8 @@ let
             install -d -o amp -g amp -m 0700 "$workspace_root"
             runuser -u amp -- git -C "$source" fetch --no-write-fetch-head "$bare" \
               "refs/heads/snapshots/$commit:refs/heads/amp-stage/$commit"
-            runuser -u amp -- jj -R "$source" workspace add \
+            # colocated so git-aware tools work in the workspace; orphan worktrees skip the post-checkout hook
+            runuser -u amp -- jj -R "$source" workspace add --colocate \
               --name "amp-$workspace_id" --revision "$commit" "$workspace"
           fi
           if [ "''${namespace,,}" = tokentax ]; then
@@ -422,6 +423,7 @@ in
             "2.11.3-go1.26.3" = "sha256-iUQXsmUJEdOpv6uXte73RXFOhxfzwb/r9vdCTVXjP4Y=";
             "2.11.4-go1.26.5" = "sha256-tP/ZQjZvfb+e3322dzd3I89Y9QwujcyqV1fbNWyw08g=";
             "2.11.4-go1.26.7" = "sha256-o0oG/9hROjDl69AeuxUhhFVTsdluHJ8VyENVk1KHCOI=";
+            "2.11.7-go1.26.8" = "sha256-3Dzgarb1nhPEA8Bxfxk7L3cn4OsIIWshYUosWf3fhqM=";
           }
           .${caddyPluginKey}
             or (throw "caddy ${caddyPluginKey}: add its caddy.withPlugins hash");
