@@ -30,6 +30,12 @@
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # this repo again, as plain source. deploys override it to the pushed tip,
+    # which keeps a rev that self loses under --override-input; see nixos.nix
+    pushed = {
+      url = "git+https://knot1.tangled.sh/did:plc:vhk4g55hbzwg6eha6r42wacw";
+      flake = false;
+    };
   };
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, home-manager, ... }:
@@ -55,7 +61,7 @@
     mkNixosSystem = { system ? "x86_64-linux", machineModule }:
       nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit self; inherit (inputs) slurp filmnight tobi; };
+        specialArgs = { inherit self; inherit (inputs) slurp filmnight tobi pushed; };
         modules = [
           ./modules/nixos.nix
           inputs.agenix.nixosModules.default

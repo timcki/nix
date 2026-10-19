@@ -105,8 +105,10 @@ is delivered: it records one to a spool and the fish greeting prints anything
 outstanding at login. Add a push notification there and nowhere else.
 `unit-failures` reports, `unit-failures --clear` empties the spool.
 
-`system.configurationRevision` is `self.rev`, or `"dirty"` when the system came
-from a working copy, which is what `nixos-version --configuration-revision`
+`system.configurationRevision` is the pushed commit when the built tree matches
+it (the `pushed` input, overridden to the tip by `deployFlags`, since
+`--override-input` strips `self.rev`), or `"dirty"` when the system came from a
+working copy, which is what `nixos-version --configuration-revision`
 reports and what the login greeting warns about.
 
 ## Usage

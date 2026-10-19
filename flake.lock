@@ -148,6 +148,22 @@
         "type": "github"
       }
     },
+    "pushed": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792416828,
+        "narHash": "sha256-ihrlB0Pq11BlyFJVmvBY1FROk/a5ICKLfV5HwbLuGiA=",
+        "ref": "refs/heads/main",
+        "rev": "d9b5a8534b0b71ec658564da5484a147c69ea5c9",
+        "revCount": 120,
+        "type": "git",
+        "url": "https://knot1.tangled.sh/did:plc:vhk4g55hbzwg6eha6r42wacw"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://knot1.tangled.sh/did:plc:vhk4g55hbzwg6eha6r42wacw"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -155,6 +171,7 @@
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs",
+        "pushed": "pushed",
         "slurp": "slurp",
         "tobi": "tobi"
       }

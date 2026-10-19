@@ -3,6 +3,7 @@
   pkgs,
   lib,
   self,
+  pushed,
   ...
 }:
 
@@ -10,8 +11,17 @@
   # what `nixos-version --configuration-revision` answers. "dirty" is the case
   # worth having: it means this system came from a working copy rather than
   # from what is pushed, so the nightly upgrade will replace it with something
-  # else, and the login greeting says so
-  system.configurationRevision = self.rev or self.dirtyRev or "dirty";
+  # else, and the login greeting says so.
+  #
+  # deploys pass --override-input, and nix then strips rev and dirtyRev from
+  # self because the lock no longer matches the commit. narHash survives, so
+  # the rev comes from `pushed` (the pushed tip, fetched in the same run) and
+  # only when its tree is byte for byte the one being built
+  system.configurationRevision =
+    self.rev or (
+      if pushed.narHash == self.narHash then pushed.rev
+      else self.dirtyRev or "dirty"
+    );
 
   # Nix configuration
   nix.settings.experimental-features = [ "nix-command" "flakes" ];

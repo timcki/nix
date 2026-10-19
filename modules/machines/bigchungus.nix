@@ -17,6 +17,10 @@ let
     "--override-input"
     "filmnight"
     "git+https://knot1.tangled.sh/did:plc:l3eogiay43j3momps2d52bol"
+    # what configurationRevision compares against; see modules/nixos.nix
+    "--override-input"
+    "pushed"
+    configFlake
   ];
 
   # a script rather than a shell alias, so there is nowhere for the two to drift
