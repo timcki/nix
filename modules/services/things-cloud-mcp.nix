@@ -6,16 +6,19 @@ let
 
   # the protocol is reverse-engineered and has one maintainer, so this moves by
   # hand only: read the diff, back up, bump rev and both hashes together
-  package = pkgs.buildGoModule rec {
+  package = pkgs.buildGoModule {
     pname = "things-cloud-mcp";
-    version = "1.4.4";
+    version = "1.4.4-unstable-2026-10-19";
+    # the task7 branch of tim's fork: upstream 83135bb plus Task7 reads, which
+    # current Things releases write and upstream still rejects. back to
+    # wbopan/things-cloud-mcp once a release handles Task7
     src = pkgs.fetchFromGitHub {
-      owner = "wbopan";
+      owner = "timcki";
       repo = "things-cloud-mcp";
-      rev = "v${version}";
-      hash = "sha256-Lka2tnexoCc7MBghFc78Z1RfEYUhGfWx62hm2Au1tQw=";
+      rev = "b759e7fd2aa5c9fa383c3b77200c72fefef0ee34";
+      hash = "sha256-XlkE6RjksFoXchUAf5KiG9oqQiVz8brIH5fSxbK0EvY=";
     };
-    vendorHash = "sha256-hYdEnpBKEzCyDq835qfcoScQfQP14QwIhgMWLOzHlbQ=";
+    vendorHash = "sha256-KHlGecewRIOOY5+BO4lQjjntzmzpKHJn1QTJKio8YOI=";
     # things-cloud-sdk is a separate module pulled in by a replace directive
     subPackages = [ "." ];
     meta.mainProgram = "things-cloud-mcp";
