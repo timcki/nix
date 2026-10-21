@@ -306,6 +306,7 @@ in
     ../services/filmnight.nix
     ../services/things-cloud-mcp.nix
     ../services/unit-failure.nix
+    ../services/disk-health.nix
   ];
 
   # Boot loader configuration
