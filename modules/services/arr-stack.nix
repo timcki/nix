@@ -28,15 +28,16 @@ let
   allPorts = vpnPorts;
 
   # iptables rules for forwarding ports into the namespace
-  # PREROUTING handles external traffic (Tailscale, LAN)
+  # PREROUTING handles tailnet traffic; DNAT runs before the INPUT firewall and
+  # FORWARD is open, so without -i the LAN reached the WebUI too
   # OUTPUT handles localhost access from the host itself
   forwardRules = lib.concatMapStringsSep "\n" (port: ''
-    iptables -t nat -A PREROUTING -p tcp --dport ${toString port} -j DNAT --to-destination 10.200.0.2:${toString port}
+    iptables -t nat -A PREROUTING -i tailscale0 -p tcp --dport ${toString port} -j DNAT --to-destination 10.200.0.2:${toString port}
     iptables -t nat -A OUTPUT -p tcp --dport ${toString port} -j DNAT --to-destination 10.200.0.2:${toString port}
   '') allPorts;
 
   cleanupForwardRules = lib.concatMapStringsSep "\n" (port: ''
-    iptables -t nat -D PREROUTING -p tcp --dport ${toString port} -j DNAT --to-destination 10.200.0.2:${toString port} 2>/dev/null || true
+    iptables -t nat -D PREROUTING -i tailscale0 -p tcp --dport ${toString port} -j DNAT --to-destination 10.200.0.2:${toString port} 2>/dev/null || true
     iptables -t nat -D OUTPUT -p tcp --dport ${toString port} -j DNAT --to-destination 10.200.0.2:${toString port} 2>/dev/null || true
   '') allPorts;
 

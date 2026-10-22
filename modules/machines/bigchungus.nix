@@ -898,5 +898,23 @@ in
   # which chungus-1 reverse proxies for things.tymek.me)
   networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 8080 3000 3010 3011 3020 3100 9443 8443 8444 8445 8446 8447 ];
 
+  # docker publishes grafana's 3100 on 0.0.0.0 and DNATs it before INPUT, so
+  # the rule above never sees it and the LAN reached it anyway. DOCKER-USER is
+  # the one chain docker leaves alone; match the pre-DNAT port so a remap
+  # inside the container cannot slip past. delete first to stay idempotent
+  # across firewall reloads
+  networking.firewall.extraCommands = ''
+    for ipt in iptables ip6tables; do
+      $ipt -N DOCKER-USER 2>/dev/null || true
+      $ipt -D DOCKER-USER ! -i tailscale0 -p tcp -m conntrack --ctorigdstport 3100 --ctdir ORIGINAL -j DROP 2>/dev/null || true
+      $ipt -I DOCKER-USER ! -i tailscale0 -p tcp -m conntrack --ctorigdstport 3100 --ctdir ORIGINAL -j DROP
+    done
+  '';
+  networking.firewall.extraStopCommands = ''
+    for ipt in iptables ip6tables; do
+      $ipt -D DOCKER-USER ! -i tailscale0 -p tcp -m conntrack --ctorigdstport 3100 --ctdir ORIGINAL -j DROP 2>/dev/null || true
+    done
+  '';
+
   system.stateVersion = "25.11";
 }
