@@ -53,6 +53,13 @@ in
   # Enable sudo with Touch ID
   security.pam.services.sudo_local.touchIdAuth = true;
 
+  # leaked eMudhra intermediates, see nixos.nix. this covers the nix bundle at
+  # /etc/ssl/certs; macOS's own /etc/ssl/cert.pem is outside nix-darwin
+  security.pki.caCertificateBlacklist = [
+    "Comodo AAA Services root"
+    "emSign ECC Root CA - G3"
+  ];
+
   # Nix configuration
   ids.gids.nixbld = 350;
   nix.settings.experimental-features = "nix-command flakes";
