@@ -4,6 +4,33 @@ let
   cfg = config.services.filmnight;
   app = "${filmnight.packages.${pkgs.stdenv.hostPlatform.system}.default}/lib/filmnight";
   node = lib.getExe pkgs.nodejs_24;
+
+  # the one way to read production without root: a .backup streamed to stdout,
+  # taking no arguments so a sudo rule on it grants exactly this and nothing more
+  snapshot = pkgs.writeShellApplication {
+    name = "filmnight-snapshot";
+    runtimeInputs = [ pkgs.coreutils pkgs.sqlite ];
+    text = ''
+      if [ "$#" -ne 0 ]; then
+        echo "usage: sudo filmnight-snapshot > copy.db" >&2
+        exit 2
+      fi
+      if [ "$(id -u)" -ne 0 ]; then
+        echo "filmnight-snapshot: must run as root" >&2
+        exit 1
+      fi
+
+      # the copy holds every personal link, so it lives at 0700 in /run only
+      # until it has been written out to whoever asked
+      umask 077
+      work=$(mktemp -d /run/filmnight-snapshot.XXXXXX)
+      trap 'rm -rf "$work"' EXIT
+
+      # .backup is safe against the live WAL writer and never writes to production
+      sqlite3 /var/lib/filmnight/filmnight.db ".backup '$work/snapshot.db'"
+      cat "$work/snapshot.db"
+    '';
+  };
 in
 {
   options.services.filmnight = {
@@ -28,6 +55,16 @@ in
     backupDir = lib.mkOption {
       type = lib.types.path;
       default = "/var/backups/filmnight";
+    };
+
+    snapshotUsers = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = ''
+        Users allowed `sudo filmnight-snapshot` without being in wheel, for
+        deploy/test-local.sh. The copy carries real personal links, which open
+        production, so everyone listed here can act as anyone in the group.
+      '';
     };
 
     demo = {
@@ -144,6 +181,7 @@ in
       # hand-run job: sudo -u filmnight filmnight-seed
       environment.systemPackages = [
         pkgs.sqlite
+        snapshot
         (pkgs.writeShellScriptBin "filmnight-seed" ''
           set -a
           . ${cfg.environmentFile}
@@ -151,6 +189,19 @@ in
           export DATABASE_PATH=''${DATABASE_PATH:-/var/lib/filmnight/filmnight.db}
           exec ${node} ${app}/seed.mjs "$@"
         '')
+      ];
+
+      security.sudo.extraRules = lib.mkIf (cfg.snapshotUsers != [ ]) [
+        {
+          users = cfg.snapshotUsers;
+          runAs = "root";
+          commands = [
+            {
+              command = "/run/current-system/sw/bin/filmnight-snapshot";
+              options = [ "NOPASSWD" ];
+            }
+          ];
+        }
       ];
 
       users.users.filmnight = {

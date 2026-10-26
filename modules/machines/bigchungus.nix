@@ -538,6 +538,8 @@ in
     filmnight = {
       enable = true;
       demo.enable = true;
+      # so deploy/test-local.sh works from the runner, real links and all
+      snapshotUsers = [ "amp" ];
     };
 
     things-cloud-mcp.enable = true;
