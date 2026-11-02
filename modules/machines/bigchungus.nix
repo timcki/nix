@@ -71,23 +71,35 @@ let
     bashInteractive
     clang
     cmake
+    coreutils
     corepack
     curl
     datadog-pup
+    diffutils
     fd
+    file
+    findutils
+    gawk
     git
     gh
+    gnugrep
     gnumake
+    gnused
+    gnutar
     google-cloud-sdk
+    gzip
     jq
     jujutsu
+    less
     linearCli
     mise
     minisign
     ninja
     openssh
+    patch
     pipx
     pkg-config
+    procps
     python3
     railway
     ripgrep
@@ -96,6 +108,7 @@ let
     stdenv.cc
     unzip
     uv
+    which
     xz
   ];
 
