@@ -23,15 +23,6 @@
       else self.dirtyRev or "dirty"
     );
 
-  # the eight eMudhra intermediates whose keys leaked in october 2026 chain to
-  # both roots (AAA through a Sectigo cross-sign). drop once cacert >= 3.131.1
-  # reaches the channel; until then this is what keeps the nightly https
-  # fetch of this flake, run as root, from accepting a forged certificate
-  security.pki.caCertificateBlacklist = [
-    "Comodo AAA Services root"
-    "emSign ECC Root CA - G3"
-  ];
-
   # Nix configuration
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
