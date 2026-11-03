@@ -69,6 +69,7 @@ let
 
   ampRunnerPackages = with pkgs; [
     bashInteractive
+    chezmoi
     clang
     cmake
     coreutils
@@ -579,6 +580,9 @@ in
       runs system services.
     - Do not edit another checkout or workspace unless the user asks.
     - Repositories and workspaces persist across disconnects and reboots.
+    - Also follow the shared rules in `~/.agents/AGENTS.md`. Agent config
+      (skills, rules) comes from the chezmoi dotfiles; commit any change to it
+      through chezmoi as that file describes.
   '';
 
   environment.etc."amp-runner/tangled-known-hosts".text = ''
@@ -713,8 +717,13 @@ in
       else
         git -C "$source" pull --ff-only
       fi
-      install -Dm644 "$source/dot_config/mise/config.toml" \
-        /home/amp/.config/mise/config.toml
+      # skills, shared rules, the kagi key and the mise config. init
+      # regenerates the config from the source template, so new age
+      # recipients reach amp too. no --force, so an edit an agent has not
+      # re-added yet stays put and only that target is skipped
+      chezmoi init
+      chezmoi apply --no-tty --keep-going \
+        || echo "amp-mise-sync: chezmoi left some targets unchanged" >&2
       mise install --yes
       mise upgrade --yes
     '';
