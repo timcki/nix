@@ -293,10 +293,6 @@ let
       esac
     '';
   };
-
-  # identifies a caddy.withPlugins build: the fixed-output hash covers caddy's
-  # source, the plugin and the go toolchain, so both halves belong in the key.
-  caddyPluginKey = "${pkgs.caddy.version}-go${pkgs.caddy.passthru.go.version}";
 in
 {
   imports = [
@@ -431,23 +427,11 @@ in
 
     caddy = {
       enable = true;
-      package = pkgs.caddy.withPlugins {
-        # No tagged releases; pinned to latest main (bb080c4, 2026-01-06).
-        plugins = [ "github.com/tailscale/caddy-tailscale@v0.0.0-20260106222316-bb080c4414ac" ];
-        # withPlugins hashes caddy's source, the plugin and the go toolchain
-        # together, so it moves when nixpkgs bumps caddy *or* go: 2.11.4 alone
-        # has two hashes. keyed by both so rolling the lock back still resolves;
-        # for a new pair, add the "got:" hash from the build error.
-        hash =
-          {
-            "2.11.3-go1.26.3" = "sha256-iUQXsmUJEdOpv6uXte73RXFOhxfzwb/r9vdCTVXjP4Y=";
-            "2.11.4-go1.26.5" = "sha256-tP/ZQjZvfb+e3322dzd3I89Y9QwujcyqV1fbNWyw08g=";
-            "2.11.4-go1.26.7" = "sha256-o0oG/9hROjDl69AeuxUhhFVTsdluHJ8VyENVk1KHCOI=";
-            "2.11.7-go1.26.8" = "sha256-3Dzgarb1nhPEA8Bxfxk7L3cn4OsIIWshYUosWf3fhqM=";
-          }
-          .${caddyPluginKey}
-            or (throw "caddy ${caddyPluginKey}: add its caddy.withPlugins hash");
-      };
+      # stock caddy: `get_certificate tailscale` is built in and fetches certs
+      # from tailscaled (see permitCertUid). the caddy-tailscale plugin is only
+      # needed to run caddy as its own tailnet node, and its withPlugins hash
+      # broke every nixpkgs bump that moved caddy or go
+      package = pkgs.caddy;
       # chungus-1 fronts tymek.me over tailscale; trusting it makes {client_ip}
       # the real visitor instead of the proxy, which analytics needs
       globalConfig = ''
