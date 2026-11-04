@@ -300,6 +300,7 @@ in
     ../services/slurp.nix
     ../services/arr-stack.nix
     ../services/samba.nix
+    ../services/blocky.nix
     ../services/filmnight.nix
     ../services/things-cloud-mcp.nix
     ../services/unit-failure.nix
