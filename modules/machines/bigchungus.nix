@@ -1,4 +1,4 @@
-{ config, lib, pkgs, slurp, tobi, ... }:
+{ config, lib, pkgs, slurp, ... }:
 
 let
   # One definition for the nightly upgrade and for switchn. They used to be two:
@@ -114,8 +114,6 @@ let
   ];
 
   ampRunnerPath = lib.makeBinPath ampRunnerPackages;
-
-  tobiPackage = tobi.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   ampClaude = lib.recursiveUpdate {
     after = [ "network-online.target" "amp-mise-sync.service" "amp-runner-init.service" ];
@@ -598,7 +596,7 @@ in
     group = "amp";
     shell = pkgs.bashInteractive;
     linger = true;
-    packages = ampRunnerPackages ++ [ tobiPackage ];
+    packages = ampRunnerPackages;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDI2dfsVzngdYLmJ3T0StS3eI3IzLMlAi7XOfqt1uVBe tim@macbook-pro"
     ];

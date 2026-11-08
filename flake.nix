@@ -22,10 +22,6 @@
       url = "git+https://knot1.tangled.sh/did:plc:lvc6qlu5xd6poflokxox6pxv";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    tobi = {
-      url = "git+https://tangled.org/ptr.pet/tobi";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -61,7 +57,7 @@
     mkNixosSystem = { system ? "x86_64-linux", machineModule }:
       nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit self; inherit (inputs) slurp filmnight tobi pushed; };
+        specialArgs = { inherit self; inherit (inputs) slurp filmnight pushed; };
         modules = [
           ./modules/nixos.nix
           inputs.agenix.nixosModules.default
