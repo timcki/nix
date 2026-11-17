@@ -681,6 +681,7 @@ in
     after = [ "network-online.target" "amp-runner-init.service" ];
     wants = [ "network-online.target" ];
     requires = [ "amp-runner-init.service" ];
+    onFailure = [ "unit-failure@%n.service" ];
     path = ampRunnerPackages;
     environment = {
       HOME = "/home/amp";
@@ -695,11 +696,24 @@ in
     };
     script = ''
       source=/home/amp/.local/share/chezmoi
-      if [ ! -d "$source/.git" ]; then
-        git clone git@tangled.org:did:plc:276qn75nkn4upl3oapzf6utp "$source"
-      else
-        git -C "$source" pull --ff-only
-      fi
+      sync_source() {
+        if [ ! -d "$source/.git" ]; then
+          git clone git@tangled.org:did:plc:276qn75nkn4upl3oapzf6utp "$source"
+        elif [ -d "$source/.jj" ]; then
+          # agents commit here through jj, which leaves git HEAD detached, so
+          # a pull has no branch to merge into. the rebase carries a commit
+          # an agent has not pushed yet along with the working copy
+          jj -R "$source" git fetch
+          jj -R "$source" rebase -b @ -d main@origin
+        else
+          git -C "$source" pull --ff-only
+        fi
+      }
+      # a source that will not sync leaves the skills stale; it must not
+      # also hold back the toolchain upgrades below, so the failure is
+      # reported once those have run
+      source_synced=1
+      sync_source || source_synced=0
       # skills, shared rules, the kagi key and the mise config. init
       # regenerates the config from the source template, so new age
       # recipients reach amp too. no --force, so an edit an agent has not
@@ -709,6 +723,10 @@ in
         || echo "amp-mise-sync: chezmoi left some targets unchanged" >&2
       mise install --yes
       mise upgrade --yes
+      if [ "$source_synced" = 0 ]; then
+        echo "amp-mise-sync: chezmoi source did not sync" >&2
+        exit 1
+      fi
     '';
   };
 
