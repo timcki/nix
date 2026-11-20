@@ -6,12 +6,12 @@ let
   # tailnet as its own node `edit-agent`, so one machine runs it
   laptopPortalAgent = pkgs.buildGoModule {
     pname = "laptop-portal-agent";
-    version = "0-unstable-2026-10-21";
+    version = "0-unstable-2026-11-23";
     src = pkgs.fetchFromGitHub {
       owner = "timcki";
       repo = "laptop-portal";
-      rev = "de95fe345ca5c4d34c90761a1d1647020a442b73";
-      hash = "sha256-DjKSeklgthGHWtts0C3HDGQrdMS14uxDQ+WQrwM5+lM=";
+      rev = "b6b34b793691661a63ca0947e4713448cedac542";
+      hash = "sha256-EtUcSBEtlntSuw7NSoZzvOr7sGT7FapUSCtvloZcCn0=";
     };
     modRoot = "agent";
     vendorHash = "sha256-+DZ0mMO2TtSiAfthcMCt0xtLatEvOvTNi+OZR9bLAKE=";
