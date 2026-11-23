@@ -303,6 +303,7 @@ in
     ../services/things-cloud-mcp.nix
     ../services/unit-failure.nix
     ../services/disk-health.nix
+    ../services/albedo.nix
   ];
 
   # Boot loader configuration
@@ -541,6 +542,8 @@ in
     };
 
     things-cloud-mcp.enable = true;
+
+    albedo-agent.enable = true;
   };
   # cli for site creation, exports and sqlite maintenance
   environment.systemPackages = [ pkgs.goatcounter ampStageServer switchn switchnLocal ];

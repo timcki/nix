@@ -22,6 +22,11 @@
       url = "git+https://knot1.tangled.sh/did:plc:lvc6qlu5xd6poflokxox6pxv";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    albedo = {
+      # public read over https, so root needs no key to evaluate this.
+      # pre-alpha: reread its docs/home-manager.md when bumping the lock
+      url = "git+https://knot1.tangled.sh/did:plc:l7hhzcbqqvpcquau5waryzdu";
+    };
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -57,7 +62,7 @@
     mkNixosSystem = { system ? "x86_64-linux", machineModule }:
       nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit self; inherit (inputs) slurp filmnight pushed; };
+        specialArgs = { inherit self; inherit (inputs) slurp filmnight pushed albedo; };
         modules = [
           ./modules/nixos.nix
           inputs.agenix.nixosModules.default

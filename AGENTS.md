@@ -34,7 +34,8 @@ repo is **public**: never commit plaintext secrets (see [Secrets](#secrets)).
 │       ├── slurp.nix      # RSS reader (flake input)
 │       ├── filmnight.nix  # film night app (flake input)
 │       ├── arr-stack.nix  # media stack behind a Mullvad wireguard netns
-│       └── samba.nix      # tailscale-only file shares
+│       ├── samba.nix      # tailscale-only file shares
+│       └── albedo.nix     # albedo agent as an isolated user, see docs/albedo.md
 ├── secrets/               # agenix-encrypted secrets + recipients
 ├── config/slurp/          # non-secret app config checked into the repo
 └── docs/                  # long-form notes
@@ -54,6 +55,8 @@ repo is **public**: never commit plaintext secrets (see [Secrets](#secrets)).
 - `nix-darwin`, `home-manager` (master, to track unstable), both `follows` nixpkgs
 - `filmnight`, `slurp`: own apps, fetched over anonymous https from tangled
   knots so root can evaluate them unattended
+- `albedo`: coding agent daemon; see
+  [docs/albedo.md](docs/albedo.md)
 - `agenix`: secret management
 
 **The tree must stay pure-evaluable.** bigchungus evaluates this flake as root
