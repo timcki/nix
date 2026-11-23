@@ -90,7 +90,12 @@ in
         ];
       };
 
-      programs.albedo.enable = true;
+      programs.albedo = {
+        enable = true;
+        # kernel-native port of the shared kagi-search skill; the key is
+        # runtime state in ~/.config/kagi/api_key, never the store
+        skills.kagi-search = ../../config/albedo/skills/kagi-search;
+      };
       services.albedo = {
         enable = true;
         web = {
